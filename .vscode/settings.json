@@ -1,0 +1,7 @@
+{
+  "git.autorefresh": true,
+  "git.openRepositoryInParentFolders": "always",
+  "scm.alwaysShowRepositories": true,
+  "terminal.integrated.defaultLocation": "view",
+  "terminal.integrated.hideOnStartup": "never"
+}
