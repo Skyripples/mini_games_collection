@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mini Game Hub</title>
+  <title>小遊戲合集</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>迷你遊戲集</h1>
+    <h1>小遊戲合集</h1>
 
     <div id="menu-screen" class="screen active">
       <h2>選擇遊戲</h2>
@@ -16,6 +16,16 @@
         <button id="btn-1a2b">1A2B</button>
         <button id="btn-snake">貪食蛇</button>
         <button id="btn-minesweeper">踩地雷</button>
+        <button id="btn-2048">2048</button>
+        <button id="btn-breakout">打磚塊</button>
+        <button id="btn-chess">西洋棋</button>
+        <button id="btn-tictactoe">圈圈叉叉</button>
+        <button id="btn-tetris">俄羅斯方塊</button>
+        <button id="btn-gomoku">五子棋</button>
+        <button id="btn-reversi">黑白棋</button>
+        <button id="btn-sudoku">數獨</button>
+        <button id="btn-xiangqi">象棋</button>
+        <button id="btn-go">圍棋</button>
       </div>
     </div>
 
@@ -56,14 +66,185 @@
       <div id="game-minesweeper" class="game-panel hidden">
         <h2>踩地雷</h2>
         <div class="input-row">
+          <label for="select-minesweeper-difficulty">難度</label>
+          <select id="select-minesweeper-difficulty">
+            <option value="easy">簡單</option>
+            <option value="normal" selected>普通</option>
+            <option value="hard">困難</option>
+          </select>
           <button id="btn-restart-minesweeper">重新開始</button>
         </div>
         <p id="minesweeper-message">左鍵翻開格子，右鍵插旗。</p>
-        <div id="minesweeper-board" class="minesweeper-board"></div>
+        <p class="game-stats">
+          難度：<span id="minesweeper-difficulty-label">普通</span>
+          <span class="stats-separator">|</span>
+          尺寸：<span id="minesweeper-size">16 x 16</span>
+          <span class="stats-separator">|</span>
+          地雷：<span id="minesweeper-mines">40</span>
+        </p>
+        <div class="board-scroll">
+          <div id="minesweeper-board" class="minesweeper-board"></div>
+        </div>
+      </div>
+
+      <div id="game-2048" class="game-panel hidden">
+        <h2>2048</h2>
+        <div class="input-row">
+          <button id="btn-restart-2048">重新開始</button>
+        </div>
+        <p>分數：<span id="score-2048">0</span></p>
+        <p id="message-2048">用方向鍵操作，上下左右滑動方塊。</p>
+        <div id="board-2048" class="board-2048"></div>
+      </div>
+
+      <div id="game-breakout" class="game-panel hidden">
+        <h2>打磚塊</h2>
+        <div class="input-row">
+          <button id="btn-start-breakout">重新開始</button>
+        </div>
+        <p class="game-stats">
+          分數：<span id="breakout-score">0</span>
+          <span class="stats-separator">|</span>
+          生命：<span id="breakout-lives">3</span>
+        </p>
+        <p id="breakout-message">按左右方向鍵控制板子，打掉所有磚塊。</p>
+        <canvas id="breakout-canvas" width="640" height="420"></canvas>
+      </div>
+
+      <div id="game-chess" class="game-panel hidden">
+        <h2>西洋棋</h2>
+        <div class="input-row">
+          <button id="btn-restart-chess">重新開始</button>
+        </div>
+        <p class="game-stats">
+          目前回合：<span id="chess-turn">白方</span>
+        </p>
+        <p id="chess-message">白方先手，請選擇棋子。</p>
+        <div class="board-scroll">
+          <div id="chess-board" class="chess-board"></div>
+        </div>
+      </div>
+
+      <div id="game-tictactoe" class="game-panel hidden">
+        <h2>圈圈叉叉</h2>
+        <div class="input-row">
+          <button id="btn-restart-tictactoe">重新開始</button>
+        </div>
+        <p class="game-stats">
+          目前回合：<span id="tictactoe-turn">圈圈</span>
+        </p>
+        <p id="tictactoe-message">圈圈先手，請落子。</p>
+        <div class="board-scroll">
+          <div id="tictactoe-board" class="tictactoe-board"></div>
+        </div>
+      </div>
+
+      <div id="game-tetris" class="game-panel hidden">
+        <h2>俄羅斯方塊</h2>
+        <div class="input-row">
+          <button id="btn-restart-tetris">重新開始</button>
+        </div>
+        <p class="game-stats">
+          分數：<span id="tetris-score">0</span>
+          <span class="stats-separator">|</span>
+          消行：<span id="tetris-lines">0</span>
+          <span class="stats-separator">|</span>
+          等級：<span id="tetris-level">1</span>
+        </p>
+        <p id="tetris-message">左右移動、上鍵旋轉、下鍵加速、空白鍵直落。</p>
+        <div class="tetris-layout">
+          <canvas id="tetris-canvas" width="320" height="640"></canvas>
+          <div class="tetris-side-panel">
+            <h3>下一個</h3>
+            <canvas id="tetris-next-canvas" width="140" height="140"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div id="game-gomoku" class="game-panel hidden">
+        <h2>五子棋</h2>
+        <div class="input-row">
+          <button id="btn-gomoku-pvp" class="mode-button">與玩家對戰</button>
+          <button id="btn-gomoku-cpu" class="mode-button">與電腦對戰</button>
+          <button id="btn-restart-gomoku">重新開始</button>
+        </div>
+        <p class="game-stats">
+          目前回合：<span id="gomoku-turn">黑棋</span>
+        </p>
+        <p id="gomoku-message">黑棋先手，請落子。</p>
+        <div class="board-scroll">
+          <div id="gomoku-board" class="gomoku-board"></div>
+        </div>
+      </div>
+
+      <div id="game-reversi" class="game-panel hidden">
+        <h2>黑白棋</h2>
+        <div class="input-row">
+          <button id="btn-reversi-pvp" class="mode-button">與玩家對戰</button>
+          <button id="btn-reversi-cpu" class="mode-button">與電腦對戰</button>
+          <button id="btn-restart-reversi">重新開始</button>
+        </div>
+        <p class="game-stats">
+          目前回合：<span id="reversi-turn">黑棋</span>
+          <span class="stats-separator">|</span>
+          黑棋：<span id="reversi-black-count">2</span>
+          <span class="stats-separator">|</span>
+          白棋：<span id="reversi-white-count">2</span>
+        </p>
+        <p id="reversi-message">黑棋先手，請落子。</p>
+        <div class="board-scroll">
+          <div id="reversi-board" class="reversi-board"></div>
+        </div>
+      </div>
+
+      <div id="game-sudoku" class="game-panel hidden">
+        <h2>數獨</h2>
+        <div class="input-row">
+          <button id="btn-new-sudoku">新題目</button>
+          <button id="btn-restart-sudoku">重新開始</button>
+        </div>
+        <p id="sudoku-message">點選空格後輸入數字。</p>
+        <div class="board-scroll">
+          <div id="sudoku-board" class="sudoku-board"></div>
+        </div>
+        <div id="sudoku-number-pad" class="sudoku-number-pad"></div>
+      </div>
+
+      <div id="game-xiangqi" class="game-panel hidden">
+        <h2>象棋</h2>
+        <div class="input-row">
+          <button id="btn-restart-xiangqi">重新開始</button>
+        </div>
+        <p class="game-stats">
+          目前回合：<span id="xiangqi-turn">紅方</span>
+        </p>
+        <p id="xiangqi-message">紅方先手，請先選擇棋子。</p>
+        <div class="board-scroll">
+          <div id="xiangqi-board" class="xiangqi-board"></div>
+        </div>
+      </div>
+
+      <div id="game-go" class="game-panel hidden">
+        <h2>圍棋</h2>
+        <div class="input-row">
+          <button id="btn-pass-go">虛手</button>
+          <button id="btn-restart-go">重新開始</button>
+        </div>
+        <p class="game-stats">
+          目前回合：<span id="go-turn">黑棋</span>
+          <span class="stats-separator">|</span>
+          黑棋提子：<span id="go-black-captures">0</span>
+          <span class="stats-separator">|</span>
+          白棋提子：<span id="go-white-captures">0</span>
+        </p>
+        <p id="go-message">黑棋先手，點選交叉點落子。連續兩次虛手會結束對局。</p>
+        <div class="board-scroll">
+          <div id="go-board" class="go-board"></div>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="main.js"></script>
+  <script type="module" src="src/main.js"></script>
 </body>
 </html>

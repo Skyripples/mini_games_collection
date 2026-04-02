@@ -6,7 +6,7 @@ import esprima
 
 ROOT = Path(__file__).resolve().parent.parent
 INDEX_HTML = ROOT / "index.html"
-MAIN_JS = ROOT / "main.js"
+SRC_DIR = ROOT / "src"
 
 REQUIRED_IDS = {
     "menu-screen",
@@ -14,6 +14,16 @@ REQUIRED_IDS = {
     "btn-1a2b",
     "btn-snake",
     "btn-minesweeper",
+    "btn-2048",
+    "btn-breakout",
+    "btn-chess",
+    "btn-tictactoe",
+    "btn-tetris",
+    "btn-gomoku",
+    "btn-reversi",
+    "btn-sudoku",
+    "btn-xiangqi",
+    "btn-go",
     "btn-back",
     "game-1a2b",
     "guess-input",
@@ -28,9 +38,77 @@ REQUIRED_IDS = {
     "snake-message",
     "snake-canvas",
     "game-minesweeper",
+    "select-minesweeper-difficulty",
     "btn-restart-minesweeper",
     "minesweeper-message",
+    "minesweeper-difficulty-label",
+    "minesweeper-size",
+    "minesweeper-mines",
     "minesweeper-board",
+    "game-2048",
+    "btn-restart-2048",
+    "score-2048",
+    "message-2048",
+    "board-2048",
+    "game-breakout",
+    "btn-start-breakout",
+    "breakout-score",
+    "breakout-lives",
+    "breakout-message",
+    "breakout-canvas",
+    "game-chess",
+    "btn-restart-chess",
+    "chess-turn",
+    "chess-message",
+    "chess-board",
+    "game-tictactoe",
+    "btn-restart-tictactoe",
+    "tictactoe-turn",
+    "tictactoe-message",
+    "tictactoe-board",
+    "game-tetris",
+    "btn-restart-tetris",
+    "tetris-score",
+    "tetris-lines",
+    "tetris-level",
+    "tetris-message",
+    "tetris-canvas",
+    "tetris-next-canvas",
+    "game-gomoku",
+    "btn-gomoku-pvp",
+    "btn-gomoku-cpu",
+    "btn-restart-gomoku",
+    "gomoku-turn",
+    "gomoku-message",
+    "gomoku-board",
+    "game-reversi",
+    "btn-reversi-pvp",
+    "btn-reversi-cpu",
+    "btn-restart-reversi",
+    "reversi-turn",
+    "reversi-black-count",
+    "reversi-white-count",
+    "reversi-message",
+    "reversi-board",
+    "game-sudoku",
+    "btn-new-sudoku",
+    "btn-restart-sudoku",
+    "sudoku-message",
+    "sudoku-board",
+    "sudoku-number-pad",
+    "game-xiangqi",
+    "btn-restart-xiangqi",
+    "xiangqi-turn",
+    "xiangqi-message",
+    "xiangqi-board",
+    "game-go",
+    "btn-pass-go",
+    "btn-restart-go",
+    "go-turn",
+    "go-black-captures",
+    "go-white-captures",
+    "go-message",
+    "go-board",
 }
 
 
@@ -51,14 +129,21 @@ class SiteParser(HTMLParser):
             self.links.append(attr_map.get("href"))
 
         if tag == "script":
-            self.scripts.append(attr_map.get("src"))
+            self.scripts.append(attr_map)
 
 
 def main() -> None:
     html = INDEX_HTML.read_text(encoding="utf-8")
-    js = MAIN_JS.read_text(encoding="utf-8")
+    js_files = sorted(SRC_DIR.rglob("*.js"))
+    if not js_files:
+        raise SystemExit("No JavaScript modules found under src/")
 
-    esprima.parseScript(js, tolerant=False)
+    for js_file in js_files:
+        js = js_file.read_text(encoding="utf-8")
+        esprima.parseModule(js, tolerant=False)
+
+        if "console.log" in js:
+            raise SystemExit(f"Remove debug console.log output before publishing: {js_file}")
 
     parser = SiteParser()
     parser.feed(html)
@@ -70,11 +155,11 @@ def main() -> None:
     if "style.css" not in parser.links:
         raise SystemExit("style.css link tag not found")
 
-    if "main.js" not in parser.scripts:
-        raise SystemExit("main.js script tag not found")
-
-    if "console.log" in js:
-        raise SystemExit("Remove debug console.log output before publishing")
+    if not any(
+        script.get("src") == "src/main.js" and script.get("type") == "module"
+        for script in parser.scripts
+    ):
+        raise SystemExit("src/main.js module script tag not found")
 
     print("Validation passed.")
 
