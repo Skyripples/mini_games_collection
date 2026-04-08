@@ -1,9 +1,21 @@
 const COLS = 10;
 const ROWS = 20;
 const CELL_SIZE = 32;
-const NEXT_CELL_SIZE = 28;
+const PREVIEW_CELL_SIZE = 28;
 const DROP_INTERVALS = [800, 720, 640, 560, 480, 420, 360, 300, 250, 210];
-const KEY_SET = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", " ", "Space"]);
+const HORIZONTAL_REPEAT_DELAY = 100;
+const HORIZONTAL_REPEAT_INTERVAL = 38;
+const KEY_SET = new Set([
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowUp",
+  "ArrowDown",
+  " ",
+  "Space",
+  "Shift",
+  "ShiftLeft",
+  "ShiftRight"
+]);
 
 const PIECES = {
   I: {
@@ -65,27 +77,37 @@ const PIECES = {
 };
 
 function createEmptyBoard() {
-  return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+  return Array.from({ length: ROWS }, function () {
+    return Array(COLS).fill(null);
+  });
 }
 
 function cloneMatrix(matrix) {
-  return matrix.map((row) => [...row]);
+  return matrix.map(function (row) {
+    return row.slice();
+  });
 }
 
 function createShuffledBag() {
   const bag = Object.keys(PIECES);
+
   for (let index = bag.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(Math.random() * (index + 1));
-    [bag[index], bag[swapIndex]] = [bag[swapIndex], bag[index]];
+    const current = bag[index];
+    bag[index] = bag[swapIndex];
+    bag[swapIndex] = current;
   }
+
   return bag;
 }
 
 function rotateMatrixClockwise(matrix) {
   const size = matrix.length;
-  return Array.from({ length: size }, (_, row) =>
-    Array.from({ length: size }, (_, col) => matrix[size - col - 1][row])
-  );
+  return Array.from({ length: size }, function (_, row) {
+    return Array.from({ length: size }, function (_, col) {
+      return matrix[size - col - 1][row];
+    });
+  });
 }
 
 function getDropInterval(level) {
@@ -95,7 +117,7 @@ function getDropInterval(level) {
 function createPiece(type) {
   const definition = PIECES[type];
   return {
-    type,
+    type: type,
     color: definition.color,
     matrix: cloneMatrix(definition.matrix),
     row: 0,
@@ -106,13 +128,14 @@ function createPiece(type) {
 function drawCell(context, x, y, size, fillStyle) {
   context.fillStyle = fillStyle;
   context.fillRect(x, y, size, size);
-  context.strokeStyle = "rgba(15, 23, 42, 0.2)";
+  context.strokeStyle = "rgba(15, 23, 42, 0.22)";
   context.lineWidth = 1;
   context.strokeRect(x + 0.5, y + 0.5, size - 1, size - 1);
 }
 
 export function createTetrisGame({
   canvas,
+  holdCanvas,
   nextCanvas,
   btnRestart,
   scoreText,
@@ -121,10 +144,12 @@ export function createTetrisGame({
   message
 }) {
   const context = canvas.getContext("2d");
+  const holdContext = holdCanvas.getContext("2d");
   const nextContext = nextCanvas.getContext("2d");
 
   let board = [];
   let currentPiece = null;
+  let holdPiece = null;
   let nextPiece = null;
   let bag = [];
   let score = 0;
@@ -132,8 +157,26 @@ export function createTetrisGame({
   let level = 1;
   let timer = null;
   let running = false;
+  let holdUsed = false;
+  let horizontalRepeatTimeoutId = null;
+  let horizontalRepeatIntervalId = null;
+  let activeHorizontalDirection = 0;
 
   canvas.tabIndex = 0;
+
+  function clearHorizontalRepeat() {
+    if (horizontalRepeatTimeoutId) {
+      clearTimeout(horizontalRepeatTimeoutId);
+      horizontalRepeatTimeoutId = null;
+    }
+
+    if (horizontalRepeatIntervalId) {
+      clearInterval(horizontalRepeatIntervalId);
+      horizontalRepeatIntervalId = null;
+    }
+
+    activeHorizontalDirection = 0;
+  }
 
   function refillBagIfNeeded() {
     if (bag.length === 0) {
@@ -149,6 +192,25 @@ export function createTetrisGame({
       for (let col = 0; col < COLS; col += 1) {
         drawCell(context, col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, "#111827");
       }
+    }
+
+    context.strokeStyle = "rgba(148, 163, 184, 0.18)";
+    context.lineWidth = 1;
+
+    for (let col = 0; col <= COLS; col += 1) {
+      const x = col * CELL_SIZE + 0.5;
+      context.beginPath();
+      context.moveTo(x, 0);
+      context.lineTo(x, canvas.height);
+      context.stroke();
+    }
+
+    for (let row = 0; row <= ROWS; row += 1) {
+      const y = row * CELL_SIZE + 0.5;
+      context.beginPath();
+      context.moveTo(0, y);
+      context.lineTo(canvas.width, y);
+      context.stroke();
     }
   }
 
@@ -170,8 +232,8 @@ export function createTetrisGame({
       return;
     }
 
-    currentPiece.matrix.forEach((pieceRow, rowOffset) => {
-      pieceRow.forEach((cell, colOffset) => {
+    currentPiece.matrix.forEach(function (pieceRow, rowOffset) {
+      pieceRow.forEach(function (cell, colOffset) {
         if (!cell) {
           return;
         }
@@ -193,32 +255,35 @@ export function createTetrisGame({
     });
   }
 
-  function drawNextPiece() {
-    nextContext.clearRect(0, 0, nextCanvas.width, nextCanvas.height);
-    nextContext.fillStyle = "#f8fafc";
-    nextContext.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+  function drawPreview(previewContext, previewCanvas, piece) {
+    previewContext.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+    previewContext.fillStyle = "#f8fafc";
+    previewContext.fillRect(0, 0, previewCanvas.width, previewCanvas.height);
+    previewContext.strokeStyle = "rgba(203, 213, 225, 0.75)";
+    previewContext.lineWidth = 1;
+    previewContext.strokeRect(0.5, 0.5, previewCanvas.width - 1, previewCanvas.height - 1);
 
-    if (!nextPiece) {
+    if (!piece) {
       return;
     }
 
-    const matrixWidth = nextPiece.matrix[0].length;
-    const matrixHeight = nextPiece.matrix.length;
-    const offsetX = Math.floor((nextCanvas.width - matrixWidth * NEXT_CELL_SIZE) / 2);
-    const offsetY = Math.floor((nextCanvas.height - matrixHeight * NEXT_CELL_SIZE) / 2);
+    const matrixWidth = piece.matrix[0].length;
+    const matrixHeight = piece.matrix.length;
+    const offsetX = Math.floor((previewCanvas.width - matrixWidth * PREVIEW_CELL_SIZE) / 2);
+    const offsetY = Math.floor((previewCanvas.height - matrixHeight * PREVIEW_CELL_SIZE) / 2);
 
-    nextPiece.matrix.forEach((pieceRow, rowIndex) => {
-      pieceRow.forEach((cell, colIndex) => {
+    piece.matrix.forEach(function (pieceRow, rowIndex) {
+      pieceRow.forEach(function (cell, colIndex) {
         if (!cell) {
           return;
         }
 
         drawCell(
-          nextContext,
-          offsetX + colIndex * NEXT_CELL_SIZE,
-          offsetY + rowIndex * NEXT_CELL_SIZE,
-          NEXT_CELL_SIZE,
-          nextPiece.color
+          previewContext,
+          offsetX + colIndex * PREVIEW_CELL_SIZE,
+          offsetY + rowIndex * PREVIEW_CELL_SIZE,
+          PREVIEW_CELL_SIZE,
+          piece.color
         );
       });
     });
@@ -228,7 +293,8 @@ export function createTetrisGame({
     drawBoardGrid();
     drawPlacedBlocks();
     drawActivePiece();
-    drawNextPiece();
+    drawPreview(holdContext, holdCanvas, holdPiece);
+    drawPreview(nextContext, nextCanvas, nextPiece);
   }
 
   function updateStats() {
@@ -242,6 +308,8 @@ export function createTetrisGame({
       clearInterval(timer);
       timer = null;
     }
+
+    clearHorizontalRepeat();
     running = false;
   }
 
@@ -253,20 +321,25 @@ export function createTetrisGame({
     if (timer) {
       clearInterval(timer);
     }
-    timer = window.setInterval(() => {
+
+    timer = window.setInterval(function () {
       dropPiece();
     }, getDropInterval(level));
   }
 
-  function collides(piece, rowOffset = 0, colOffset = 0, matrix = piece.matrix) {
-    for (let row = 0; row < matrix.length; row += 1) {
-      for (let col = 0; col < matrix[row].length; col += 1) {
-        if (!matrix[row][col]) {
+  function collides(piece, rowOffset, colOffset, matrix) {
+    const nextRowOffset = typeof rowOffset === "number" ? rowOffset : 0;
+    const nextColOffset = typeof colOffset === "number" ? colOffset : 0;
+    const nextMatrix = matrix || piece.matrix;
+
+    for (let row = 0; row < nextMatrix.length; row += 1) {
+      for (let col = 0; col < nextMatrix[row].length; col += 1) {
+        if (!nextMatrix[row][col]) {
           continue;
         }
 
-        const nextRow = piece.row + row + rowOffset;
-        const nextCol = piece.col + col + colOffset;
+        const nextRow = piece.row + row + nextRowOffset;
+        const nextCol = piece.col + col + nextColOffset;
 
         if (nextCol < 0 || nextCol >= COLS || nextRow >= ROWS) {
           return true;
@@ -282,8 +355,8 @@ export function createTetrisGame({
   }
 
   function mergePiece() {
-    currentPiece.matrix.forEach((pieceRow, rowOffset) => {
-      pieceRow.forEach((cell, colOffset) => {
+    currentPiece.matrix.forEach(function (pieceRow, rowOffset) {
+      pieceRow.forEach(function (cell, colOffset) {
         if (!cell) {
           return;
         }
@@ -323,12 +396,17 @@ export function createTetrisGame({
     }
 
     updateStats();
-    message.textContent = `消除了 ${cleared} 行，輪到下一個方塊。`;
+    message.textContent = `消除了 ${cleared} 行，版面整理成功。`;
   }
 
   function drawFromBag() {
     refillBagIfNeeded();
     return createPiece(bag.pop());
+  }
+
+  function resetPiecePosition(piece) {
+    piece.row = 0;
+    piece.col = Math.floor((COLS - piece.matrix[0].length) / 2);
   }
 
   function gameOver() {
@@ -339,9 +417,9 @@ export function createTetrisGame({
 
   function spawnPiece() {
     currentPiece = nextPiece || drawFromBag();
-    currentPiece.row = 0;
-    currentPiece.col = Math.floor((COLS - currentPiece.matrix[0].length) / 2);
+    resetPiecePosition(currentPiece);
     nextPiece = drawFromBag();
+    holdUsed = false;
 
     if (collides(currentPiece, 0, 0)) {
       render();
@@ -361,13 +439,32 @@ export function createTetrisGame({
 
   function movePiece(colOffset) {
     if (!running || !currentPiece) {
-      return;
+      return false;
     }
 
     if (!collides(currentPiece, 0, colOffset)) {
       currentPiece.col += colOffset;
       render();
+      return true;
     }
+
+    return false;
+  }
+
+  function startHorizontalRepeat(direction) {
+    clearHorizontalRepeat();
+
+    if (!running) {
+      return;
+    }
+
+    activeHorizontalDirection = direction;
+    movePiece(direction);
+    horizontalRepeatTimeoutId = window.setTimeout(function () {
+      horizontalRepeatIntervalId = window.setInterval(function () {
+        movePiece(direction);
+      }, HORIZONTAL_REPEAT_INTERVAL);
+    }, HORIZONTAL_REPEAT_DELAY);
   }
 
   function rotatePiece() {
@@ -378,7 +475,8 @@ export function createTetrisGame({
     const rotated = rotateMatrixClockwise(currentPiece.matrix);
     const kicks = [0, -1, 1, -2, 2];
 
-    for (const kick of kicks) {
+    for (let index = 0; index < kicks.length; index += 1) {
+      const kick = kicks[index];
       if (!collides(currentPiece, 0, kick, rotated)) {
         currentPiece.matrix = rotated;
         currentPiece.col += kick;
@@ -388,9 +486,39 @@ export function createTetrisGame({
     }
   }
 
+  function holdCurrentPiece() {
+    if (!running || !currentPiece || holdUsed) {
+      return;
+    }
+
+    const currentType = currentPiece.type;
+
+    if (holdPiece) {
+      const swappedPiece = createPiece(holdPiece.type);
+      holdPiece = createPiece(currentType);
+      currentPiece = swappedPiece;
+      resetPiecePosition(currentPiece);
+    } else {
+      holdPiece = createPiece(currentType);
+      currentPiece = nextPiece || drawFromBag();
+      resetPiecePosition(currentPiece);
+      nextPiece = drawFromBag();
+    }
+
+    holdUsed = true;
+
+    if (collides(currentPiece, 0, 0)) {
+      render();
+      gameOver();
+      return;
+    }
+
+    render();
+  }
+
   function dropPiece() {
     if (!running || !currentPiece) {
-      return;
+      return false;
     }
 
     if (!collides(currentPiece, 1, 0)) {
@@ -442,10 +570,12 @@ export function createTetrisGame({
     lines = 0;
     level = 1;
     currentPiece = null;
+    holdPiece = null;
+    holdUsed = false;
     nextPiece = drawFromBag();
     updateStats();
     running = true;
-    message.textContent = "左右移動、上鍵旋轉、下鍵加速、空白鍵直落。";
+    message.textContent = "左右移動、上鍵旋轉、下鍵加速、空白鍵直落、Shift 暫存方塊。";
     spawnPiece();
     canvas.focus({ preventScroll: true });
     startLoop();
@@ -463,12 +593,16 @@ export function createTetrisGame({
     }
 
     if (event.key === "ArrowLeft") {
-      movePiece(-1);
+      if (!event.repeat) {
+        startHorizontalRepeat(-1);
+      }
       return;
     }
 
     if (event.key === "ArrowRight") {
-      movePiece(1);
+      if (!event.repeat) {
+        startHorizontalRepeat(1);
+      }
       return;
     }
 
@@ -484,10 +618,30 @@ export function createTetrisGame({
 
     if (event.key === " " || event.key === "Space") {
       hardDrop();
+      return;
+    }
+
+    if (
+      event.key === "Shift" ||
+      event.key === "ShiftLeft" ||
+      event.key === "ShiftRight"
+    ) {
+      holdCurrentPiece();
     }
   }
 
-  btnRestart.addEventListener("click", (event) => {
+  function handleKeyUp(event) {
+    if (event.key === "ArrowLeft" && activeHorizontalDirection === -1) {
+      clearHorizontalRepeat();
+      return;
+    }
+
+    if (event.key === "ArrowRight" && activeHorizontalDirection === 1) {
+      clearHorizontalRepeat();
+    }
+  }
+
+  btnRestart.addEventListener("click", function (event) {
     event.currentTarget.blur();
     start();
   });
@@ -495,6 +649,7 @@ export function createTetrisGame({
   return {
     enter: start,
     leave: stop,
-    handleKeyDown
+    handleKeyDown: handleKeyDown,
+    handleKeyUp: handleKeyUp
   };
 }

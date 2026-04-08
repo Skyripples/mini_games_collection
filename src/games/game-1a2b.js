@@ -1,3 +1,5 @@
+import { t } from "../core/i18n.js";
+
 export function createGame1A2B({
   btnGuess,
   btnRestart,
@@ -8,6 +10,18 @@ export function createGame1A2B({
 }) {
   let answer = "";
   let guessCount = 0;
+  let messageState = { key: "1a2b.message.start", params: null };
+
+  function setMessage(key, params) {
+    messageState = { key, params: params || null };
+    message.textContent = t(key, params);
+  }
+
+  function renderMessage() {
+    if (messageState.key) {
+      message.textContent = t(messageState.key, messageState.params || undefined);
+    }
+  }
 
   function generateAnswer() {
     const digits = [];
@@ -56,7 +70,7 @@ export function createGame1A2B({
     guessCount = 0;
     guessCountText.textContent = "0";
     historyList.innerHTML = "";
-    message.textContent = "遊戲開始！";
+    setMessage("1a2b.message.start");
     guessInput.value = "";
     guessInput.disabled = false;
     btnGuess.disabled = false;
@@ -67,7 +81,7 @@ export function createGame1A2B({
     const guess = guessInput.value.trim();
 
     if (!isValidGuess(guess)) {
-      message.textContent = "請輸入 4 個不重複的數字。";
+      setMessage("1a2b.message.invalid");
       return;
     }
 
@@ -78,10 +92,14 @@ export function createGame1A2B({
     addHistory(guess, result);
 
     if (result.aCount === 4) {
-      message.textContent = `恭喜答對！你用了 ${guessCount} 次猜中答案 ${answer}。`;
+      setMessage("1a2b.message.win", {
+        count: guessCount,
+        answer
+      });
       btnGuess.disabled = true;
       guessInput.disabled = true;
     } else {
+      messageState = { key: null, params: null };
       message.textContent = `${result.aCount}A${result.bCount}B`;
     }
 
@@ -93,13 +111,14 @@ export function createGame1A2B({
 
   btnGuess.addEventListener("click", handleGuess);
   btnRestart.addEventListener("click", reset);
-  guessInput.addEventListener("keydown", (event) => {
+  guessInput.addEventListener("keydown", function (event) {
     if (event.key === "Enter") {
       handleGuess();
     }
   });
 
   return {
-    enter: reset
+    enter: reset,
+    refreshLocale: renderMessage
   };
 }

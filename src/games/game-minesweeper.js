@@ -1,3 +1,5 @@
+import { t } from "../core/i18n.js";
+
 export function createMinesweeperGame({
   boardElement,
   btnRestart,
@@ -9,21 +11,21 @@ export function createMinesweeperGame({
 }) {
   const difficultySettings = {
     easy: {
-      label: "簡單",
+      labelKey: "common.easy",
       rows: 9,
       cols: 9,
       mines: 10,
       cellSize: 34
     },
     normal: {
-      label: "普通",
+      labelKey: "common.normal",
       rows: 16,
       cols: 16,
       mines: 40,
       cellSize: 28
     },
     hard: {
-      label: "困難",
+      labelKey: "common.hard",
       rows: 16,
       cols: 30,
       mines: 99,
@@ -35,14 +37,20 @@ export function createMinesweeperGame({
   let gameOver = false;
   let boardReady = false;
   let currentDifficulty = difficultySelect.value in difficultySettings ? difficultySelect.value : "normal";
+  let messageKey = "minesweeper.message.start";
 
   function getSettings() {
     return difficultySettings[currentDifficulty];
   }
 
+  function setMessage(key) {
+    messageKey = key;
+    message.textContent = t(key);
+  }
+
   function applyDifficulty() {
     const settings = getSettings();
-    difficultyLabel.textContent = settings.label;
+    difficultyLabel.textContent = t(settings.labelKey);
     sizeText.textContent = `${settings.cols} x ${settings.rows}`;
     mineText.textContent = String(settings.mines);
     boardElement.style.setProperty("--ms-cols", String(settings.cols));
@@ -50,12 +58,12 @@ export function createMinesweeperGame({
   }
 
   function createEmptyBoard() {
-    const { rows, cols } = getSettings();
+    const settings = getSettings();
     board = [];
 
-    for (let row = 0; row < rows; row += 1) {
+    for (let row = 0; row < settings.rows; row += 1) {
       const currentRow = [];
-      for (let col = 0; col < cols; col += 1) {
+      for (let col = 0; col < settings.cols; col += 1) {
         currentRow.push({
           mine: false,
           revealed: false,
@@ -68,15 +76,13 @@ export function createMinesweeperGame({
   }
 
   function placeMines(safeRow, safeCol) {
-    const { rows, cols, mines } = getSettings();
+    const settings = getSettings();
     let placed = 0;
 
-    while (placed < mines) {
-      const row = Math.floor(Math.random() * rows);
-      const col = Math.floor(Math.random() * cols);
-      const nearFirstClick =
-        Math.abs(row - safeRow) <= 1 &&
-        Math.abs(col - safeCol) <= 1;
+    while (placed < settings.mines) {
+      const row = Math.floor(Math.random() * settings.rows);
+      const col = Math.floor(Math.random() * settings.cols);
+      const nearFirstClick = Math.abs(row - safeRow) <= 1 && Math.abs(col - safeCol) <= 1;
 
       if (!board[row][col].mine && !nearFirstClick) {
         board[row][col].mine = true;
@@ -86,9 +92,10 @@ export function createMinesweeperGame({
   }
 
   function countAdjacentMines() {
-    const { rows, cols } = getSettings();
-    for (let row = 0; row < rows; row += 1) {
-      for (let col = 0; col < cols; col += 1) {
+    const settings = getSettings();
+
+    for (let row = 0; row < settings.rows; row += 1) {
+      for (let col = 0; col < settings.cols; col += 1) {
         if (board[row][col].mine) {
           continue;
         }
@@ -105,9 +112,9 @@ export function createMinesweeperGame({
             const nextCol = col + colOffset;
             const insideBoard =
               nextRow >= 0 &&
-              nextRow < rows &&
+              nextRow < settings.rows &&
               nextCol >= 0 &&
-              nextCol < cols;
+              nextCol < settings.cols;
 
             if (insideBoard && board[nextRow][nextCol].mine) {
               count += 1;
@@ -121,9 +128,10 @@ export function createMinesweeperGame({
   }
 
   function revealAllMines() {
-    const { rows, cols } = getSettings();
-    for (let row = 0; row < rows; row += 1) {
-      for (let col = 0; col < cols; col += 1) {
+    const settings = getSettings();
+
+    for (let row = 0; row < settings.rows; row += 1) {
+      for (let col = 0; col < settings.cols; col += 1) {
         if (board[row][col].mine) {
           board[row][col].revealed = true;
         }
@@ -132,9 +140,10 @@ export function createMinesweeperGame({
   }
 
   function checkWin() {
-    const { rows, cols } = getSettings();
-    for (let row = 0; row < rows; row += 1) {
-      for (let col = 0; col < cols; col += 1) {
+    const settings = getSettings();
+
+    for (let row = 0; row < settings.rows; row += 1) {
+      for (let col = 0; col < settings.cols; col += 1) {
         const cell = board[row][col];
         if (!cell.mine && !cell.revealed) {
           return false;
@@ -156,7 +165,7 @@ export function createMinesweeperGame({
   }
 
   function revealRegion(startRow, startCol) {
-    const { rows, cols } = getSettings();
+    const settings = getSettings();
     const queue = [[startRow, startCol]];
 
     while (queue.length > 0) {
@@ -183,9 +192,9 @@ export function createMinesweeperGame({
           const nextCol = col + colOffset;
           const insideBoard =
             nextRow >= 0 &&
-            nextRow < rows &&
+            nextRow < settings.rows &&
             nextCol >= 0 &&
-            nextCol < cols;
+            nextCol < settings.cols;
 
           if (!insideBoard) {
             continue;
@@ -216,7 +225,7 @@ export function createMinesweeperGame({
       cell.revealed = true;
       revealAllMines();
       gameOver = true;
-      message.textContent = "你踩到地雷了！";
+      setMessage("minesweeper.message.hitMine");
       render();
       return;
     }
@@ -225,7 +234,7 @@ export function createMinesweeperGame({
 
     if (checkWin()) {
       gameOver = true;
-      message.textContent = "恭喜，你把地雷都避開了！";
+      setMessage("minesweeper.message.win");
     }
 
     render();
@@ -246,11 +255,11 @@ export function createMinesweeperGame({
   }
 
   function render() {
-    const { rows, cols } = getSettings();
+    const settings = getSettings();
     boardElement.innerHTML = "";
 
-    for (let row = 0; row < rows; row += 1) {
-      for (let col = 0; col < cols; col += 1) {
+    for (let row = 0; row < settings.rows; row += 1) {
+      for (let col = 0; col < settings.cols; col += 1) {
         const cell = board[row][col];
         const cellElement = document.createElement("div");
 
@@ -273,8 +282,10 @@ export function createMinesweeperGame({
           cellElement.textContent = "F";
         }
 
-        cellElement.addEventListener("click", () => revealCell(row, col));
-        cellElement.addEventListener("contextmenu", (event) => {
+        cellElement.addEventListener("click", function () {
+          revealCell(row, col);
+        });
+        cellElement.addEventListener("contextmenu", function (event) {
           event.preventDefault();
           toggleFlag(row, col);
         });
@@ -287,23 +298,28 @@ export function createMinesweeperGame({
   function reset() {
     gameOver = false;
     boardReady = false;
-    message.textContent = "左鍵翻開格子，右鍵插旗。";
+    setMessage("minesweeper.message.start");
     applyDifficulty();
     createEmptyBoard();
     render();
   }
 
-  btnRestart.addEventListener("click", (event) => {
+  btnRestart.addEventListener("click", function (event) {
     event.currentTarget.blur();
     reset();
   });
-  difficultySelect.addEventListener("change", () => {
+
+  difficultySelect.addEventListener("change", function () {
     currentDifficulty = difficultySelect.value;
     difficultySelect.blur();
     reset();
   });
 
   return {
-    enter: reset
+    enter: reset,
+    refreshLocale: function () {
+      applyDifficulty();
+      message.textContent = t(messageKey);
+    }
   };
 }

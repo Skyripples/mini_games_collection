@@ -1,3 +1,5 @@
+import { t } from "../core/i18n.js";
+
 export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, message }) {
   const context = canvas.getContext("2d");
   const arrowKeys = new Set(["ArrowLeft", "ArrowRight", "Space", " "]);
@@ -28,8 +30,28 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
   let running = false;
   let launched = false;
   let bricks = [];
+  let messageKey = "breakout.message.ready";
 
   canvas.tabIndex = 0;
+
+  function setMessage(key, params) {
+    messageKey = key;
+    message.textContent = t(key, params);
+  }
+
+  function refreshMessage() {
+    if (messageKey === "breakout.message.life") {
+      message.textContent = t(messageKey, { lives });
+      return;
+    }
+
+    if (messageKey === "breakout.message.win" || messageKey === "breakout.message.gameOver") {
+      message.textContent = t(messageKey, { score });
+      return;
+    }
+
+    message.textContent = t(messageKey);
+  }
 
   function createBricks() {
     bricks = [];
@@ -75,8 +97,8 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
   }
 
   function drawBricks() {
-    bricks.forEach((row) => {
-      row.forEach((brick) => {
+    bricks.forEach(function (row) {
+      row.forEach(function (brick) {
         if (brick.broken) {
           return;
         }
@@ -108,12 +130,16 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
   }
 
   function allBricksCleared() {
-    return bricks.every((row) => row.every((brick) => brick.broken));
+    return bricks.every(function (row) {
+      return row.every(function (brick) {
+        return brick.broken;
+      });
+    });
   }
 
   function resetLife() {
     resetBallAndPaddle();
-    message.textContent = `還有 ${lives} 條命，按空白鍵繼續發球。`;
+    setMessage("breakout.message.life", { lives });
   }
 
   function handleBrickCollisions() {
@@ -134,8 +160,9 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
 
           if (allBricksCleared()) {
             stop();
-            message.textContent = `恭喜過關！總分：${score}`;
+            setMessage("breakout.message.win", { score });
           }
+
           return;
         }
       }
@@ -188,7 +215,7 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
 
       if (lives <= 0) {
         stop();
-        message.textContent = `遊戲結束，最終分數：${score}`;
+        setMessage("breakout.message.gameOver", { score });
         return;
       }
 
@@ -212,7 +239,7 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
     createBricks();
     resetBallAndPaddle();
     updateStats();
-    message.textContent = "按左右方向鍵控制板子，按空白鍵發球。";
+    setMessage("breakout.message.ready");
     draw();
     running = true;
     canvas.focus({ preventScroll: true });
@@ -225,7 +252,7 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
     }
 
     launched = true;
-    message.textContent = "按左右方向鍵控制板子，打掉所有磚塊。";
+    setMessage("breakout.message.launched");
   }
 
   function handleKeyDown(event) {
@@ -259,7 +286,7 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
     }
   }
 
-  btnStart.addEventListener("click", (event) => {
+  btnStart.addEventListener("click", function (event) {
     event.currentTarget.blur();
     start();
   });
@@ -268,6 +295,7 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
     enter: start,
     leave: stop,
     handleKeyDown,
-    handleKeyUp
+    handleKeyUp,
+    refreshLocale: refreshMessage
   };
 }

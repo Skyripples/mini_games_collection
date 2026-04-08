@@ -1,3 +1,5 @@
+import { t } from "../core/i18n.js";
+
 export function createGomokuGame({
   boardElement,
   btnPvp,
@@ -18,11 +20,12 @@ export function createGomokuGame({
   let currentPlayer = "black";
   let gameOver = false;
   let mode = "pvp";
+  let messageState = { type: "start" };
 
   boardElement.tabIndex = 0;
 
   function getPlayerLabel(player) {
-    return player === "black" ? "黑棋" : "白棋";
+    return player === "black" ? t("players.blackStone") : t("players.whiteStone");
   }
 
   function getOpponent(player) {
@@ -38,8 +41,35 @@ export function createGomokuGame({
     turnText.textContent = getPlayerLabel(currentPlayer);
   }
 
+  function renderMessage() {
+    switch (messageState.type) {
+      case "cpuUnavailable":
+        message.textContent = t("gomoku.message.cpuUnavailable");
+        return;
+      case "win":
+        message.textContent = t("gomoku.message.win", {
+          player: getPlayerLabel(messageState.player)
+        });
+        return;
+      case "draw":
+        message.textContent = t("gomoku.message.draw");
+        return;
+      case "turn":
+        message.textContent = t("gomoku.message.turn", {
+          player: getPlayerLabel(currentPlayer)
+        });
+        return;
+      case "start":
+      default:
+        message.textContent =
+          mode === "cpu" ? t("gomoku.message.cpuUnavailable") : t("gomoku.message.start");
+    }
+  }
+
   function createEmptyBoard() {
-    board = Array.from({ length: size }, () => Array(size).fill(""));
+    board = Array.from({ length: size }, function () {
+      return Array(size).fill("");
+    });
   }
 
   function countDirection(row, col, rowStep, colStep) {
@@ -64,7 +94,7 @@ export function createGomokuGame({
   }
 
   function isWinningMove(row, col) {
-    return directions.some(([rowStep, colStep]) => {
+    return directions.some(function ([rowStep, colStep]) {
       const lineLength =
         1 +
         countDirection(row, col, rowStep, colStep) +
@@ -74,7 +104,11 @@ export function createGomokuGame({
   }
 
   function isBoardFull() {
-    return board.every((row) => row.every((cell) => cell !== ""));
+    return board.every(function (row) {
+      return row.every(function (cell) {
+        return cell !== "";
+      });
+    });
   }
 
   function render() {
@@ -103,22 +137,17 @@ export function createGomokuGame({
     }
 
     boardElement.appendChild(fragment);
+    updateModeButtons();
+    updateTurn();
   }
 
   function startGame() {
     createEmptyBoard();
     currentPlayer = "black";
     gameOver = false;
-    updateModeButtons();
-    updateTurn();
-
-    if (mode === "cpu") {
-      message.textContent = "與電腦對戰尚未開放，請先使用與玩家對戰。";
-    } else {
-      message.textContent = "黑棋先手，請落子。";
-    }
-
+    messageState = { type: "start" };
     render();
+    renderMessage();
     boardElement.focus({ preventScroll: true });
   }
 
@@ -129,7 +158,8 @@ export function createGomokuGame({
     }
 
     if (mode === "cpu") {
-      message.textContent = "與電腦對戰尚未開放，請先使用與玩家對戰。";
+      messageState = { type: "cpuUnavailable" };
+      renderMessage();
       return;
     }
 
@@ -147,42 +177,47 @@ export function createGomokuGame({
 
     if (isWinningMove(row, col)) {
       gameOver = true;
-      updateTurn();
-      message.textContent = `${getPlayerLabel(currentPlayer)}獲勝！`;
+      messageState = { type: "win", player: currentPlayer };
       render();
+      renderMessage();
       return;
     }
 
     if (isBoardFull()) {
       gameOver = true;
-      message.textContent = "平手，棋盤已滿。";
+      messageState = { type: "draw" };
       render();
+      renderMessage();
       return;
     }
 
     currentPlayer = getOpponent(currentPlayer);
-    updateTurn();
-    message.textContent = `${getPlayerLabel(currentPlayer)}回合，請落子。`;
+    messageState = { type: "turn" };
     render();
+    renderMessage();
   }
 
   boardElement.addEventListener("click", handleBoardClick);
-  btnPvp.addEventListener("click", (event) => {
+  btnPvp.addEventListener("click", function (event) {
     event.currentTarget.blur();
     mode = "pvp";
     startGame();
   });
-  btnCpu.addEventListener("click", (event) => {
+  btnCpu.addEventListener("click", function (event) {
     event.currentTarget.blur();
     mode = "cpu";
     startGame();
   });
-  btnRestart.addEventListener("click", (event) => {
+  btnRestart.addEventListener("click", function (event) {
     event.currentTarget.blur();
     startGame();
   });
 
   return {
-    enter: startGame
+    enter: startGame,
+    refreshLocale: function () {
+      render();
+      renderMessage();
+    }
   };
 }

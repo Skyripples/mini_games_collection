@@ -1,86 +1,105 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>小遊戲合集</title>
+  <title>撠??脣???</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>小遊戲合集</h1>
+    <div class="app-toolbar">
+      <div class="app-settings">
+        <label class="settings-field" for="language-select">
+          <span data-i18n="settings.language">隤?閮剖?</span>
+          <select id="language-select">
+            <option value="zh" data-i18n="settings.language.zh">銝剜?</option>
+            <option value="en" data-i18n="settings.language.en">English</option>
+          </select>
+        </label>
+
+        <label class="theme-switch" for="theme-toggle">
+          <span class="theme-switch__label" data-i18n="settings.darkMode">瘛梯璅∪?</span>
+          <input id="theme-toggle" type="checkbox" />
+          <span class="theme-switch__slider" aria-hidden="true"></span>
+        </label>
+      </div>
+    </div>
+
+    <h1 data-i18n="app.title">撠??脣???</h1>
 
     <div id="menu-screen" class="screen active">
-      <h2>選擇遊戲</h2>
-      <div class="menu-buttons">
-        <button id="btn-1a2b">1A2B</button>
-        <button id="btn-snake">貪食蛇</button>
-        <button id="btn-minesweeper">踩地雷</button>
-        <button id="btn-2048">2048</button>
-        <button id="btn-breakout">打磚塊</button>
-        <button id="btn-chess">西洋棋</button>
-        <button id="btn-tictactoe">圈圈叉叉</button>
-        <button id="btn-tetris">俄羅斯方塊</button>
-        <button id="btn-gomoku">五子棋</button>
-        <button id="btn-reversi">黑白棋</button>
-        <button id="btn-sudoku">數獨</button>
-        <button id="btn-xiangqi">象棋</button>
-        <button id="btn-go">圍棋</button>
+      <div class="menu-hero">
+        <div>
+          <p class="menu-eyebrow" data-i18n="app.subtitle">Mini Games Collection</p>
+          <h2 data-i18n="app.menuHeading">靘撖虫???漲?????脣澈</h2>
+          <p class="menu-description" data-i18n="app.menuDescription">敺陛?桅?頛舫?銝頝舀??啣之???頂蝯梧?瘥撐?∠??賣銝??蝮桀?嚗靘踹翰??唳?拍?憿???</p>
+        </div>
+
+        <div class="menu-legend">
+          <span class="menu-legend__chip level-1" data-i18n="menu.level.1">Lv.1 ?仿?</span>
+          <span class="menu-legend__chip level-2" data-i18n="menu.level.2">Lv.2 ?箇?鈭?</span>
+          <span class="menu-legend__chip level-3" data-i18n="menu.level.3">Lv.3 銝剝?閬?</span>
+          <span class="menu-legend__chip level-4" data-i18n="menu.level.4">Lv.4 銴?蝟餌絞</span>
+          <span class="menu-legend__chip level-5" data-i18n="menu.level.5">Lv.5 憭批?閬?</span>
+        </div>
       </div>
+
+      <div id="menu-buttons" class="menu-buttons"></div>
     </div>
 
     <div id="game-screen" class="screen">
       <div class="top-bar">
-        <button id="btn-back">回到主選單</button>
+        <button id="btn-back" data-i18n="common.backToMenu">?銝駁??</button>
       </div>
 
       <div id="game-1a2b" class="game-panel hidden">
-        <h2>1A2B</h2>
-        <p>請輸入 4 個不重複的數字來猜答案。</p>
+        <h2 data-i18n="1a2b.title">1A2B</h2>
+        <p data-i18n="1a2b.description">頛詨 4 ?????摮???梯?蝑???</p>
 
         <div class="input-row">
-          <input id="guess-input" type="text" maxlength="4" placeholder="例如 1234" />
-          <button id="btn-guess">猜測</button>
-          <button id="btn-restart-1a2b">重新開始</button>
+          <input id="guess-input" type="text" maxlength="4" data-i18n-placeholder="1a2b.placeholder" placeholder="靘? 1234" />
+          <button id="btn-guess" data-i18n="common.guess">?葫</button>
+          <button id="btn-restart-1a2b" data-i18n="common.restart">???</button>
         </div>
 
-        <p id="message">遊戲開始！</p>
-        <p>猜測次數：<span id="guess-count">0</span></p>
+        <p id="message">???嚗?</p>
+        <p><span data-i18n="1a2b.guessCount">?葫甈⊥嚗?</span><span id="guess-count">0</span></p>
 
         <div class="history">
-          <h3>歷史紀錄</h3>
+          <h3 data-i18n="common.history">?葫蝝??</h3>
           <ul id="history-list"></ul>
         </div>
       </div>
 
       <div id="game-snake" class="game-panel hidden">
-        <h2>貪食蛇</h2>
+        <h2 data-i18n="snake.title">鞎芷???</h2>
         <div class="input-row">
-          <button id="btn-start-snake">開始 / 重新開始</button>
+          <button id="btn-start-snake" data-i18n="common.startRestart">?? / ???</button>
         </div>
-        <p>分數：<span id="snake-score">0</span></p>
-        <p id="snake-message">按方向鍵控制移動，吃到食物就會變長。</p>
+        <p><span data-i18n="common.score">?嚗?</span><span id="snake-score">0</span></p>
+        <p id="snake-message">???批蝘餃?嚗??圈??拙停???瑯?</p>
         <canvas id="snake-canvas" width="400" height="400"></canvas>
       </div>
 
       <div id="game-minesweeper" class="game-panel hidden">
-        <h2>踩地雷</h2>
+        <h2 data-i18n="minesweeper.title">頦拙??</h2>
         <div class="input-row">
-          <label for="select-minesweeper-difficulty">難度</label>
+          <label for="select-minesweeper-difficulty" data-i18n="common.difficulty">??漲</label>
           <select id="select-minesweeper-difficulty">
-            <option value="easy">簡單</option>
-            <option value="normal" selected>普通</option>
-            <option value="hard">困難</option>
+            <option value="easy" data-i18n="common.easy">蝪∪</option>
+            <option value="normal" data-i18n="common.normal">?桅?</option>
+            <option value="hard" data-i18n="common.hard">?圈</option>
           </select>
-          <button id="btn-restart-minesweeper">重新開始</button>
+          <button id="btn-restart-minesweeper" data-i18n="common.restart">???</button>
         </div>
-        <p id="minesweeper-message">左鍵翻開格子，右鍵插旗。</p>
+        <p id="minesweeper-message">撌阡蝧駁??澆?嚗?菜???</p>
         <p class="game-stats">
-          難度：<span id="minesweeper-difficulty-label">普通</span>
+          <span data-i18n="common.difficulty">??漲</span><span>嚗?</span><span id="minesweeper-difficulty-label">?桅?</span>
           <span class="stats-separator">|</span>
-          尺寸：<span id="minesweeper-size">16 x 16</span>
+          <span data-i18n="common.size">?游嚗?</span><span id="minesweeper-size">16 x 16</span>
           <span class="stats-separator">|</span>
-          地雷：<span id="minesweeper-mines">40</span>
+          <span data-i18n="common.mines">?詨?嚗?</span><span id="minesweeper-mines">40</span>
         </p>
         <div class="board-scroll">
           <div id="minesweeper-board" class="minesweeper-board"></div>
@@ -88,122 +107,223 @@
       </div>
 
       <div id="game-2048" class="game-panel hidden">
-        <h2>2048</h2>
+        <h2 data-i18n="2048.title">2048</h2>
         <div class="input-row">
-          <button id="btn-restart-2048">重新開始</button>
+          <button id="btn-restart-2048" data-i18n="common.restart">???</button>
         </div>
-        <p>分數：<span id="score-2048">0</span></p>
-        <p id="message-2048">用方向鍵操作，上下左右滑動方塊。</p>
+        <p class="game-stats">
+          <span data-i18n="common.score">?嚗?</span><span id="score-2048">0</span>
+        </p>
+        <p id="message-2048">?冽???嚗?銝椰?單??憛?</p>
         <div id="board-2048" class="board-2048"></div>
       </div>
 
       <div id="game-breakout" class="game-panel hidden">
-        <h2>打磚塊</h2>
+        <h2 data-i18n="breakout.title">??憛?</h2>
         <div class="input-row">
-          <button id="btn-start-breakout">重新開始</button>
+          <button id="btn-start-breakout" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">
-          分數：<span id="breakout-score">0</span>
+          <span data-i18n="common.score">?嚗?</span><span id="breakout-score">0</span>
           <span class="stats-separator">|</span>
-          生命：<span id="breakout-lives">3</span>
+          <span data-i18n="common.lives">?嚗?</span><span id="breakout-lives">3</span>
         </p>
-        <p id="breakout-message">按左右方向鍵控制板子，打掉所有磚塊。</p>
+        <p id="breakout-message">?椰?單??批?踹?嚗?????憛?</p>
         <canvas id="breakout-canvas" width="640" height="420"></canvas>
       </div>
 
-      <div id="game-chess" class="game-panel hidden">
-        <h2>西洋棋</h2>
+      <div id="game-pinball" class="game-panel hidden">
+        <h2 data-i18n="pinball.title">敶???</h2>
         <div class="input-row">
-          <button id="btn-restart-chess">重新開始</button>
+          <button id="btn-restart-pinball" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">
-          目前回合：<span id="chess-turn">白方</span>
+          <span data-i18n="common.score">?嚗?</span><span id="pinball-score">0</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="common.ballsRemaining">?拚?敶?嚗?</span><span id="pinball-balls">3</span>
         </p>
-        <p id="chess-message">白方先手，請選擇棋子。</p>
+        <p id="pinball-message">??蝛箇?菜?銝???嚗椰?單??批???</p>
+        <div class="pinball-layout">
+          <canvas id="pinball-canvas" width="520" height="720"></canvas>
+          <div class="pinball-side-panel">
+            <div class="pinball-touch-controls">
+              <button id="btn-pinball-left" data-i18n="pinball.leftFlipper">撌行???</button>
+              <button id="btn-launch-pinball" data-i18n="pinball.launch">?澆?</button>
+              <button id="btn-pinball-right" data-i18n="pinball.rightFlipper">?單???</button>
+            </div>
+            <p class="pinball-hint" data-i18n="pinball.hint">獢??舐撌血?孵??菜?嗆??選???蝛箇?菜?銝???嚗???潛???</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="game-dino" class="game-panel hidden">
+        <h2 data-i18n="dino.title">?Ｙ?撠?樴?</h2>
+        <div class="input-row">
+          <button id="btn-restart-dino" data-i18n="common.restart">???</button>
+        </div>
+        <p class="game-stats">
+          <span data-i18n="common.score">?嚗?</span><span id="dino-score">0</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="common.speed">?漲嚗?</span><span id="dino-speed">6.4x</span>
+        </p>
+        <p id="dino-message">?征?賡???孵??菔歲頨?銝??臭誑頩脖????</p>
+        <div class="dino-layout">
+          <canvas id="dino-canvas" width="800" height="240"></canvas>
+          <div class="dino-side-panel">
+            <div class="dino-touch-controls">
+              <button id="btn-dino-jump" data-i18n="dino.jump">頝唾?</button>
+              <button id="btn-dino-duck" data-i18n="dino.duck">頩脖?</button>
+            </div>
+            <p class="dino-hint" data-i18n="dino.hint">獢??舐蝛箇?菜?銝?頝唾?嚗??孵??菔僕銝????舐?亦銝??????</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="game-pacman" class="game-panel hidden">
+        <h2 data-i18n="pacman.title">撠移??</h2>
+        <div class="input-row">
+          <button id="btn-restart-pacman" data-i18n="common.restart">???</button>
+        </div>
+        <p class="game-stats">
+          <span data-i18n="common.score">?嚗?</span><span id="pacman-score">0</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="common.lives">?嚗?</span><span id="pacman-lives">3</span>
+        </p>
+        <p id="pacman-message">?冽??批撠移???????摮蒂?輸?擛潦?</p>
+        <div class="pacman-layout">
+          <canvas id="pacman-canvas" width="504" height="504"></canvas>
+          <div class="pacman-side-panel">
+            <div class="pacman-touch-controls">
+              <button id="btn-pacman-up" data-i18n="pacman.up">銝?</button>
+              <div class="pacman-touch-middle">
+                <button id="btn-pacman-left" data-i18n="pacman.left">撌?</button>
+                <button id="btn-pacman-down" data-i18n="pacman.down">銝?</button>
+                <button id="btn-pacman-right" data-i18n="pacman.right">??</button>
+              </div>
+            </div>
+            <p class="pacman-hint" data-i18n="pacman.hint">獢??舐?孵??菜? WASD ?批嚗?璈?湔暺?????宏???</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="game-chess" class="game-panel hidden">
+        <h2 data-i18n="chess.title">镼踵?璉?</h2>
+        <div class="input-row">
+          <button id="btn-restart-chess" data-i18n="common.restart">???</button>
+        </div>
+        <p class="game-stats">
+          <span data-i18n="common.turn">?桀???嚗?</span><span id="chess-turn">?賣</span>
+        </p>
+        <p id="chess-message">?賣??嚗??豢?璉???</p>
         <div class="board-scroll">
           <div id="chess-board" class="chess-board"></div>
         </div>
       </div>
 
       <div id="game-tictactoe" class="game-panel hidden">
-        <h2>圈圈叉叉</h2>
+        <h2 data-i18n="tictactoe.title">鈭?璉?</h2>
         <div class="input-row">
-          <button id="btn-restart-tictactoe">重新開始</button>
+          <button id="btn-tictactoe-pvp" class="mode-button" data-i18n="common.playerVsPlayer">?摰嗅???</button>
+          <button id="btn-tictactoe-cpu" class="mode-button" data-i18n="common.playerVsComputer">??血???</button>
+          <button id="btn-restart-tictactoe" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">
-          目前回合：<span id="tictactoe-turn">圈圈</span>
+          <span data-i18n="common.turn">?桀???嚗?</span><span id="tictactoe-turn">??</span>
         </p>
-        <p id="tictactoe-message">圈圈先手，請落子。</p>
+        <p class="game-stats">
+          <span data-i18n="tictactoe.circleOwner">??嚗?</span><span id="tictactoe-circle-owner">?拙振 1嚗???</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="tictactoe.crossOwner">??嚗?</span><span id="tictactoe-cross-owner">?拙振 2嚗???</span>
+        </p>
+        <p id="tictactoe-message">????嚗??賢???</p>
         <div class="board-scroll">
           <div id="tictactoe-board" class="tictactoe-board"></div>
         </div>
       </div>
 
       <div id="game-tetris" class="game-panel hidden">
-        <h2>俄羅斯方塊</h2>
+        <h2 data-i18n="tetris.title">靽??舀憛?</h2>
         <div class="input-row">
-          <button id="btn-restart-tetris">重新開始</button>
+          <button id="btn-restart-tetris" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">
-          分數：<span id="tetris-score">0</span>
+          <span data-i18n="common.score">?嚗?</span><span id="tetris-score">0</span>
           <span class="stats-separator">|</span>
-          消行：<span id="tetris-lines">0</span>
+          <span data-i18n="common.lines">瘨銵嚗?</span><span id="tetris-lines">0</span>
           <span class="stats-separator">|</span>
-          等級：<span id="tetris-level">1</span>
+          <span data-i18n="common.level">蝑?嚗?</span><span id="tetris-level">1</span>
         </p>
-        <p id="tetris-message">左右移動、上鍵旋轉、下鍵加速、空白鍵直落。</p>
+        <p id="tetris-message">撌血蝘餃????菜?頧??萄??征?賡?渲?hift ?怠??孵???</p>
         <div class="tetris-layout">
           <canvas id="tetris-canvas" width="320" height="640"></canvas>
           <div class="tetris-side-panel">
-            <h3>下一個</h3>
-            <canvas id="tetris-next-canvas" width="140" height="140"></canvas>
+            <div class="tetris-preview-section">
+              <h3 data-i18n="common.next">銝???</h3>
+              <canvas id="tetris-next-canvas" width="140" height="140"></canvas>
+            </div>
+            <div class="tetris-preview-section">
+              <h3 data-i18n="common.hold">?怠?</h3>
+              <canvas id="tetris-hold-canvas" width="140" height="140"></canvas>
+            </div>
           </div>
         </div>
       </div>
 
       <div id="game-gomoku" class="game-panel hidden">
-        <h2>五子棋</h2>
+        <h2 data-i18n="gomoku.title">鈭?璉?</h2>
         <div class="input-row">
-          <button id="btn-gomoku-pvp" class="mode-button">與玩家對戰</button>
-          <button id="btn-gomoku-cpu" class="mode-button">與電腦對戰</button>
-          <button id="btn-restart-gomoku">重新開始</button>
+          <button id="btn-gomoku-pvp" class="mode-button" data-i18n="common.playerVsPlayer">?摰嗅???</button>
+          <button id="btn-gomoku-cpu" class="mode-button" data-i18n="common.playerVsComputer">??血???</button>
+          <button id="btn-restart-gomoku" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">
-          目前回合：<span id="gomoku-turn">黑棋</span>
+          <span data-i18n="common.turn">?桀???嚗?</span><span id="gomoku-turn">暺?</span>
         </p>
-        <p id="gomoku-message">黑棋先手，請落子。</p>
+        <p id="gomoku-message">暺???嚗??賢???</p>
         <div class="board-scroll">
           <div id="gomoku-board" class="gomoku-board"></div>
         </div>
       </div>
 
       <div id="game-reversi" class="game-panel hidden">
-        <h2>黑白棋</h2>
+        <h2 data-i18n="reversi.title">暺璉?</h2>
         <div class="input-row">
-          <button id="btn-reversi-pvp" class="mode-button">與玩家對戰</button>
-          <button id="btn-reversi-cpu" class="mode-button">與電腦對戰</button>
-          <button id="btn-restart-reversi">重新開始</button>
+          <button id="btn-reversi-pvp" class="mode-button" data-i18n="common.playerVsPlayer">?摰嗅???</button>
+          <button id="btn-reversi-cpu" class="mode-button" data-i18n="common.playerVsComputer">??血???</button>
+          <button id="btn-restart-reversi" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">
-          目前回合：<span id="reversi-turn">黑棋</span>
+          <span data-i18n="common.turn">?桀???嚗?</span><span id="reversi-turn">暺?</span>
           <span class="stats-separator">|</span>
-          黑棋：<span id="reversi-black-count">2</span>
+          <span data-i18n="common.blackCount">暺?嚗?</span><span id="reversi-black-count">2</span>
           <span class="stats-separator">|</span>
-          白棋：<span id="reversi-white-count">2</span>
+          <span data-i18n="common.whiteCount">?賣?嚗?</span><span id="reversi-white-count">2</span>
         </p>
-        <p id="reversi-message">黑棋先手，請落子。</p>
+        <p id="reversi-message">暺???嚗??冽?蝷粹?雿摮?</p>
         <div class="board-scroll">
           <div id="reversi-board" class="reversi-board"></div>
         </div>
       </div>
 
       <div id="game-sudoku" class="game-panel hidden">
-        <h2>數獨</h2>
+        <h2 data-i18n="sudoku.title">?貊</h2>
         <div class="input-row">
-          <button id="btn-new-sudoku">新題目</button>
-          <button id="btn-restart-sudoku">重新開始</button>
+          <label for="select-sudoku-difficulty" data-i18n="common.difficulty">??漲</label>
+          <select id="select-sudoku-difficulty">
+            <option value="easy" data-i18n="common.easy">蝪∪</option>
+            <option value="normal" data-i18n="common.normal">?桅?</option>
+            <option value="hard" data-i18n="common.hard">?圈</option>
+          </select>
+          <button id="btn-new-sudoku" data-i18n="common.newPuzzle">?圈???</button>
+          <button id="btn-sudoku-note" class="mode-button" data-i18n="sudoku.noteModeOff">蝑?璅∪?嚗?</button>
+          <button id="btn-restart-sudoku" data-i18n="common.restart">???</button>
         </div>
-        <p id="sudoku-message">點選空格後輸入數字。</p>
+        <p class="game-stats">
+          <span data-i18n="common.currentDifficulty">?桀???漲嚗?</span><span id="sudoku-difficulty-label">?桅?</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="common.mistakes">?航炊甈⊥嚗?</span><span id="sudoku-mistakes">0 / 3</span>
+        </p>
+        <p id="sudoku-message">暺蝛箸敺撓?交摮?</p>
         <div class="board-scroll">
           <div id="sudoku-board" class="sudoku-board"></div>
         </div>
@@ -211,33 +331,33 @@
       </div>
 
       <div id="game-xiangqi" class="game-panel hidden">
-        <h2>象棋</h2>
+        <h2 data-i18n="xiangqi.title">鞊⊥?</h2>
         <div class="input-row">
-          <button id="btn-restart-xiangqi">重新開始</button>
+          <button id="btn-restart-xiangqi" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">
-          目前回合：<span id="xiangqi-turn">紅方</span>
+          <span data-i18n="common.turn">?桀???嚗?</span><span id="xiangqi-turn">蝝</span>
         </p>
-        <p id="xiangqi-message">紅方先手，請先選擇棋子。</p>
+        <p id="xiangqi-message">蝝??嚗????摮?</p>
         <div class="board-scroll">
           <div id="xiangqi-board" class="xiangqi-board"></div>
         </div>
       </div>
 
       <div id="game-go" class="game-panel hidden">
-        <h2>圍棋</h2>
+        <h2 data-i18n="go.title">??</h2>
         <div class="input-row">
-          <button id="btn-pass-go">虛手</button>
-          <button id="btn-restart-go">重新開始</button>
+          <button id="btn-pass-go" data-i18n="common.pass">??</button>
+          <button id="btn-restart-go" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">
-          目前回合：<span id="go-turn">黑棋</span>
+          <span data-i18n="common.turn">?桀???嚗?</span><span id="go-turn">暺?</span>
           <span class="stats-separator">|</span>
-          黑棋提子：<span id="go-black-captures">0</span>
+          <span data-i18n="common.blackCaptures">暺???嚗?</span><span id="go-black-captures">0</span>
           <span class="stats-separator">|</span>
-          白棋提子：<span id="go-white-captures">0</span>
+          <span data-i18n="common.whiteCaptures">?賣???嚗?</span><span id="go-white-captures">0</span>
         </p>
-        <p id="go-message">黑棋先手，點選交叉點落子。連續兩次虛手會結束對局。</p>
+        <p id="go-message">暺???嚗??訾漱???賢?????拇活??????撅??</p>
         <div class="board-scroll">
           <div id="go-board" class="go-board"></div>
         </div>
@@ -248,3 +368,5 @@
   <script type="module" src="src/main.js"></script>
 </body>
 </html>
+
+

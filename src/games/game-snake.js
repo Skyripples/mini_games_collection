@@ -1,3 +1,5 @@
+import { t } from "../core/i18n.js";
+
 export function createSnakeGame({ canvas, btnStart, scoreText, message }) {
   const context = canvas.getContext("2d");
   const gridSize = 20;
@@ -13,6 +15,21 @@ export function createSnakeGame({ canvas, btnStart, scoreText, message }) {
   let score = 0;
   let timer = null;
   let running = false;
+  let messageKey = "snake.message.start";
+
+  function setMessage(key, params) {
+    messageKey = key;
+    message.textContent = t(key, params);
+  }
+
+  function refreshMessage() {
+    if (messageKey === "snake.message.gameOver" || messageKey === "snake.message.win") {
+      message.textContent = t(messageKey, { score });
+      return;
+    }
+
+    message.textContent = t(messageKey);
+  }
 
   function placeFood() {
     while (true) {
@@ -21,7 +38,10 @@ export function createSnakeGame({ canvas, btnStart, scoreText, message }) {
         y: Math.floor(Math.random() * tileCount)
       };
 
-      const isOnSnake = snake.some((part) => part.x === candidate.x && part.y === candidate.y);
+      const isOnSnake = snake.some(function (part) {
+        return part.x === candidate.x && part.y === candidate.y;
+      });
+
       if (!isOnSnake) {
         food = candidate;
         return;
@@ -39,7 +59,7 @@ export function createSnakeGame({ canvas, btnStart, scoreText, message }) {
     context.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
 
     context.fillStyle = "#2d3436";
-    snake.forEach((part) => {
+    snake.forEach(function (part) {
       context.fillRect(part.x * gridSize, part.y * gridSize, gridSize - 2, gridSize - 2);
     });
   }
@@ -55,7 +75,7 @@ export function createSnakeGame({ canvas, btnStart, scoreText, message }) {
 
   function gameOver() {
     stop();
-    message.textContent = `遊戲結束，最終分數：${score}`;
+    setMessage("snake.message.gameOver", { score });
   }
 
   function update() {
@@ -66,7 +86,10 @@ export function createSnakeGame({ canvas, btnStart, scoreText, message }) {
     const willEatFood = head.x === food.x && head.y === food.y;
     const snakeBody = willEatFood ? snake : snake.slice(0, -1);
 
-    const hitsSelf = snakeBody.some((part) => part.x === head.x && part.y === head.y);
+    const hitsSelf = snakeBody.some(function (part) {
+      return part.x === head.x && part.y === head.y;
+    });
+
     if (hitsSelf) {
       gameOver();
       return;
@@ -80,7 +103,7 @@ export function createSnakeGame({ canvas, btnStart, scoreText, message }) {
 
       if (snake.length === tileCount * tileCount) {
         stop();
-        message.textContent = `恭喜獲勝，你填滿了整個棋盤！分數：${score}`;
+        setMessage("snake.message.win", { score });
         draw();
         return;
       }
@@ -103,7 +126,7 @@ export function createSnakeGame({ canvas, btnStart, scoreText, message }) {
     dy = 0;
     score = 0;
     scoreText.textContent = "0";
-    message.textContent = "按方向鍵控制移動，吃到食物就會變長。";
+    setMessage("snake.message.start");
     placeFood();
     draw();
   }
@@ -142,7 +165,7 @@ export function createSnakeGame({ canvas, btnStart, scoreText, message }) {
     }
   }
 
-  btnStart.addEventListener("click", (event) => {
+  btnStart.addEventListener("click", function (event) {
     event.currentTarget.blur();
     start();
   });
@@ -150,6 +173,7 @@ export function createSnakeGame({ canvas, btnStart, scoreText, message }) {
   return {
     enter: start,
     leave: stop,
-    handleKeyDown
+    handleKeyDown,
+    refreshLocale: refreshMessage
   };
 }

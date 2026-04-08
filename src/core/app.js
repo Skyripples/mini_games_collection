@@ -52,6 +52,9 @@ export function createGameHub({ menuScreen, gameScreen, backButton, entries }) {
     if (typeof nextEntry.game.enter === "function") {
       nextEntry.game.enter();
     }
+    if (typeof nextEntry.game.refreshLocale === "function") {
+      nextEntry.game.refreshLocale();
+    }
   }
 
   Object.entries(entries).forEach(([name, entry]) => {

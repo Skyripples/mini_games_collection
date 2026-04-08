@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="pencilBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="55%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="pencilEdge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8d38b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(22 22)">
+    <rect x="0" y="0" width="148" height="148" rx="22" fill="#ffffff" stroke="#111827" stroke-width="6"/>
+    <g stroke="#111827" stroke-linecap="round">
+      <path d="M49.33 8v132M98.66 8v132M8 49.33h132M8 98.66h132" stroke-width="4.8"/>
+      <path d="M32.88 8v132M82.22 8v132M131.55 8v132M8 32.88h132M8 82.22h132M8 131.55h132" stroke-width="1.8" opacity=".32"/>
+    </g>
+    <text x="26" y="37" fill="#111827" font-size="26" font-weight="700" text-anchor="middle" font-family="Trebuchet MS, Segoe UI, sans-serif">1</text>
+    <text x="74" y="37" fill="#1d4ed8" font-size="26" font-weight="700" text-anchor="middle" font-family="Trebuchet MS, Segoe UI, sans-serif">2</text>
+    <text x="26" y="86" fill="#1d4ed8" font-size="26" font-weight="700" text-anchor="middle" font-family="Trebuchet MS, Segoe UI, sans-serif">6</text>
+    <text x="122" y="86" fill="#1d4ed8" font-size="26" font-weight="700" text-anchor="middle" font-family="Trebuchet MS, Segoe UI, sans-serif">4</text>
+    <text x="26" y="135" fill="#111827" font-size="26" font-weight="700" text-anchor="middle" font-family="Trebuchet MS, Segoe UI, sans-serif">7</text>
+    <text x="74" y="135" fill="#1d4ed8" font-size="26" font-weight="700" text-anchor="middle" font-family="Trebuchet MS, Segoe UI, sans-serif">8</text>
+    <text x="122" y="135" fill="#111827" font-size="26" font-weight="700" text-anchor="middle" font-family="Trebuchet MS, Segoe UI, sans-serif">9</text>
+  </g>
+
+  <g transform="translate(102 32) rotate(38 34 64)">
+    <rect x="20" y="8" width="28" height="92" rx="9" fill="url(#pencilBody)"/>
+    <rect x="16" y="8" width="8" height="92" rx="4" fill="url(#pencilEdge)"/>
+    <path d="M20 100h28l-14 28Z" fill="#f1cf9a"/>
+    <path d="M29 118h10l-5 10Z" fill="#111827"/>
+    <rect x="20" y="0" width="28" height="12" rx="5" fill="#f59e0b"/>
+  </g>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <g stroke="#111111" stroke-width="8" stroke-linecap="round">
+    <path d="M64 28v136"/>
+    <path d="M128 28v136"/>
+    <path d="M28 64h136"/>
+    <path d="M28 128h136"/>
+  </g>
+
+  <g fill="none" stroke-width="10" stroke-linecap="round">
+    <path d="M36 36l20 20M56 36L36 56" stroke="#1d4ed8"/>
+    <circle cx="96" cy="46" r="15" stroke="#ef4444"/>
+    <path d="M136 36l20 20M156 36l-20 20" stroke="#1d4ed8"/>
+    <circle cx="96" cy="96" r="15" stroke="#ef4444"/>
+    <circle cx="144" cy="96" r="15" stroke="#ef4444"/>
+    <path d="M136 136l20 20M156 136l-20 20" stroke="#1d4ed8"/>
+  </g>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <defs>
+    <radialGradient id="mineShell" cx="36%" cy="30%" r="74%">
+      <stop offset="0%" stop-color="#3b3b3b"/>
+      <stop offset="18%" stop-color="#171717"/>
+      <stop offset="72%" stop-color="#090909"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <radialGradient id="mineCore" cx="45%" cy="40%" r="72%">
+      <stop offset="0%" stop-color="#3d3d3d"/>
+      <stop offset="52%" stop-color="#111111"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </radialGradient>
+  </defs>
+
+  <g transform="translate(96 96)">
+    <g fill="#101010">
+      <rect x="-8" y="-76" width="16" height="24" rx="3"/>
+      <rect x="-8" y="52" width="16" height="24" rx="3"/>
+      <rect x="-76" y="-8" width="24" height="16" rx="3"/>
+      <rect x="52" y="-8" width="24" height="16" rx="3"/>
+      <rect x="-8" y="-76" width="16" height="24" rx="3" transform="rotate(45)"/>
+      <rect x="-8" y="-76" width="16" height="24" rx="3" transform="rotate(135)"/>
+      <rect x="-8" y="-76" width="16" height="24" rx="3" transform="rotate(225)"/>
+      <rect x="-8" y="-76" width="16" height="24" rx="3" transform="rotate(315)"/>
+    </g>
+    <circle r="56" fill="url(#mineShell)"/>
+    <circle r="24" fill="url(#mineCore)"/>
+    <circle r="12" fill="#090909"/>
+    <ellipse cx="-16" cy="-20" rx="18" ry="13" fill="#ffffff" opacity=".14" transform="rotate(-18)"/>
+    <ellipse cx="22" cy="12" rx="12" ry="18" fill="#ffffff" opacity=".08"/>
+  </g>
+</svg>
