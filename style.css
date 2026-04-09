@@ -1975,6 +1975,7 @@ input {
 }
 
 .memory-card__inner {
+  display: block;
   position: relative;
   width: 100%;
   height: 100%;
@@ -2040,6 +2041,12 @@ input {
     linear-gradient(180deg, #1f1537 0%, #3b0764 100%);
 }
 
+.memory-board[data-theme="tarot"] .memory-card__face--front {
+  background:
+    linear-gradient(180deg, #fff7ed 0%, #f5d0fe 100%);
+  border-color: rgba(147, 51, 234, 0.25);
+}
+
 .memory-board[data-theme="fruit"] .memory-card__face--back {
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0 16%, transparent 16% 50%, rgba(255, 255, 255, 0.12) 50% 66%, transparent 66% 100%),
@@ -2047,11 +2054,26 @@ input {
   background-size: 22px 22px, auto;
 }
 
+.memory-board[data-theme="fruit"] .memory-card__face--front {
+  background:
+    linear-gradient(180deg, #fefce8 0%, #ecfccb 100%);
+  border-color: rgba(22, 163, 74, 0.25);
+}
+
 .memory-card__label {
   font-size: 22px;
   font-weight: 800;
   letter-spacing: 0.05em;
   color: var(--memory-accent, #2563eb);
+}
+
+.memory-board[data-theme="tarot"] .memory-card__label {
+  font-size: 18px;
+  letter-spacing: 0.12em;
+}
+
+.memory-board[data-theme="fruit"] .memory-card__label {
+  font-size: 18px;
 }
 
 .memory-card__sublabel {

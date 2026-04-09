@@ -294,7 +294,8 @@ export function createMemoryGame({
   function prepareNewGame() {
     clearAsyncWork();
     currentDifficulty = difficultySelect.value || "normal";
-    currentTheme = themeSelect.value || "playing";
+    currentTheme = themeSelect ? themeSelect.value || "playing" : "playing";
+
     cards = buildDeck(currentTheme, currentDifficulty);
     openIndices = [];
     elapsedMs = 0;
@@ -433,9 +434,11 @@ export function createMemoryGame({
   difficultySelect.addEventListener("change", function () {
     prepareNewGame();
   });
-  themeSelect.addEventListener("change", function () {
-    prepareNewGame();
-  });
+  if (themeSelect) {
+    themeSelect.addEventListener("change", function () {
+      prepareNewGame();
+    });
+  }
   btnRestart.addEventListener("click", function (event) {
     event.currentTarget.blur();
     prepareNewGame();
@@ -445,7 +448,7 @@ export function createMemoryGame({
     enter: function () {
       if (!initialized) {
         currentDifficulty = difficultySelect.value || "normal";
-        currentTheme = themeSelect.value || "playing";
+        currentTheme = themeSelect ? themeSelect.value || "playing" : "playing";
         prepareNewGame();
         return;
       }
