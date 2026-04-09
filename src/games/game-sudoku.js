@@ -405,6 +405,9 @@ export function createSudokuGame({
       numberPadElement.appendChild(button);
     }
 
+    btnNoteMode.classList.add("sudoku-action-button", "sudoku-note-button");
+    numberPadElement.appendChild(btnNoteMode);
+
     const clearButton = document.createElement("button");
     clearButton.type = "button";
     clearButton.className = "sudoku-number-button clear";

@@ -46,7 +46,7 @@ function formatMenuRank(order) {
   return String(order).padStart(2, "0");
 }
 
-function createMenuCard(definition) {
+function createMenuCard(definition, rankNumber) {
   const button = document.createElement("button");
   const top = document.createElement("span");
   const rank = document.createElement("span");
@@ -63,7 +63,7 @@ function createMenuCard(definition) {
   top.className = "menu-card__top";
 
   rank.className = "menu-card__rank";
-  rank.textContent = formatMenuRank(definition.menu.order);
+  rank.textContent = formatMenuRank(rankNumber);
 
   difficulty.className = `menu-card__difficulty level-${definition.menu.level}`;
   difficulty.dataset.i18n = levelKey;
@@ -94,12 +94,16 @@ function renderMenuCards(registry, container) {
     });
 
   container.innerHTML = "";
-  sortedRegistry.forEach(function (definition) {
-    fragment.appendChild(createMenuCard(definition));
+  sortedRegistry.forEach(function (definition, index) {
+    fragment.appendChild(createMenuCard(definition, index + 1));
   });
   container.appendChild(fragment);
   translatePage(container);
 }
+
+const visibleRegistry = gameRegistry.filter(function (definition) {
+  return !definition.hidden;
+});
 
 const menuScreen = getRequiredElement("menu-screen");
 const gameScreen = getRequiredElement("game-screen");
@@ -108,9 +112,9 @@ const backButton = getRequiredElement("btn-back");
 const languageSelect = getRequiredElement("language-select");
 const themeToggle = getRequiredElement("theme-toggle");
 
-renderMenuCards(gameRegistry, menuButtons);
+renderMenuCards(visibleRegistry, menuButtons);
 
-const entries = initializeRegisteredGames(gameRegistry, getRequiredElement);
+const entries = initializeRegisteredGames(visibleRegistry, getRequiredElement);
 const games = Object.values(entries).map(function ({ game }) {
   return game;
 });

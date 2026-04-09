@@ -56,6 +56,7 @@ function createRegistryEntry({
   buttonId,
   panelId,
   createGame,
+  hidden = false,
   order,
   level,
   titleKey,
@@ -66,6 +67,7 @@ function createRegistryEntry({
     id: id,
     buttonId: buttonId,
     panelId: panelId,
+    hidden: hidden,
     createGame: createGame,
     menu: {
       order: order,
@@ -108,6 +110,10 @@ export const gameRegistry = [
     createGame: createGameFactory(createSnakeGame, {
       canvas: "snake-canvas",
       btnStart: "btn-start-snake",
+      btnUp: "btn-snake-up",
+      btnLeft: "btn-snake-left",
+      btnDown: "btn-snake-down",
+      btnRight: "btn-snake-right",
       scoreText: "snake-score",
       message: "snake-message"
     })
@@ -175,6 +181,7 @@ export const gameRegistry = [
     id: "pinball",
     buttonId: "btn-pinball",
     panelId: "game-pinball",
+    hidden: true,
     order: 12,
     level: 4,
     titleKey: "menu.pinball.title",
@@ -202,6 +209,7 @@ export const gameRegistry = [
     id: "dino",
     buttonId: "btn-dino",
     panelId: "game-dino",
+    hidden: true,
     order: 6,
     level: 2,
     titleKey: "menu.dino.title",
@@ -228,6 +236,7 @@ export const gameRegistry = [
     id: "pacman",
     buttonId: "btn-pacman",
     panelId: "game-pacman",
+    hidden: true,
     order: 13,
     level: 4,
     titleKey: "menu.pacman.title",
@@ -265,13 +274,10 @@ export const gameRegistry = [
       createChessGame,
       {
         boardElement: "chess-board",
+        btnAssist: "btn-assist-chess",
         btnRestart: "btn-restart-chess",
         turnText: "chess-turn",
         message: "chess-message"
-      },
-      {
-        messageId: "chess-message",
-        messageKey: "chess.message.start"
       }
     )
   }),
@@ -353,6 +359,7 @@ export const gameRegistry = [
       boardElement: "reversi-board",
       btnPvp: "btn-reversi-pvp",
       btnCpu: "btn-reversi-cpu",
+      btnAssist: "btn-assist-reversi",
       btnRestart: "btn-restart-reversi",
       message: "reversi-message",
       turnText: "reversi-turn",
@@ -394,13 +401,10 @@ export const gameRegistry = [
       createXiangqiGame,
       {
         boardElement: "xiangqi-board",
+        btnAssist: "btn-assist-xiangqi",
         btnRestart: "btn-restart-xiangqi",
         turnText: "xiangqi-turn",
         message: "xiangqi-message"
-      },
-      {
-        messageId: "xiangqi-message",
-        messageKey: "xiangqi.message.start"
       }
     )
   }),

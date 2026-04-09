@@ -1,11 +1,19 @@
+import { t } from "../core/i18n.js";
+
 const WIDTH = 520;
 const HEIGHT = 720;
 const BALL_RADIUS = 10;
 const BALL_DRAG = 0.996;
 const BALL_GRAVITY = 0.24;
 const BALL_MAX_SPEED = 15;
-const BALL_START_X = WIDTH - 56;
-const BALL_START_Y = HEIGHT - 98;
+const LAUNCH_LANE_LEFT = WIDTH - 86;
+const LAUNCH_LANE_WIDTH = 40;
+const LAUNCH_LANE_TOP = 56;
+const LAUNCH_LANE_BOTTOM = HEIGHT - 72;
+const LAUNCH_RAIL_X = WIDTH - 96;
+const RIGHT_WALL_BOTTOM = HEIGHT - 70;
+const BALL_START_X = WIDTH - 66;
+const BALL_START_Y = HEIGHT - 100;
 const FLIPPER_LENGTH = 92;
 const FLIPPER_THICKNESS = 18;
 const FLIPPER_MOVE_SPEED = 0.24;
@@ -18,28 +26,16 @@ const RIGHT_ACTIVE_ANGLE = Math.PI + 0.34;
 const MAX_CHARGE = 18;
 const LEFT_KEYS = new Set(["ArrowLeft", "a", "A"]);
 const RIGHT_KEYS = new Set(["ArrowRight", "d", "D"]);
-const LAUNCH_KEYS = new Set(["ArrowDown", "s", "S", " ", "Space"]);
-const CONTROL_KEYS = new Set([
-  "ArrowLeft",
-  "a",
-  "A",
-  "ArrowRight",
-  "d",
-  "D",
-  "ArrowDown",
-  "s",
-  "S",
-  " ",
-  "Space"
-]);
+const LAUNCH_KEYS = new Set([" ", "Space"]);
+const CONTROL_KEYS = new Set(["ArrowLeft", "a", "A", "ArrowRight", "d", "D", " ", "Space"]);
 
 const TABLE_SEGMENTS = [
   { x1: 28, y1: 28, x2: WIDTH - 28, y2: 28, radius: 8, bounce: 0.95 },
   { x1: 28, y1: 28, x2: 28, y2: 560, radius: 8, bounce: 0.94 },
-  { x1: WIDTH - 28, y1: 28, x2: WIDTH - 28, y2: 560, radius: 8, bounce: 0.94 },
-  { x1: WIDTH - 96, y1: 142, x2: WIDTH - 96, y2: 648, radius: 6, bounce: 0.9 },
+  { x1: WIDTH - 28, y1: 28, x2: WIDTH - 28, y2: RIGHT_WALL_BOTTOM, radius: 8, bounce: 0.94 },
+  { x1: LAUNCH_RAIL_X, y1: 132, x2: LAUNCH_RAIL_X, y2: 654, radius: 6, bounce: 0.9 },
   { x1: 28, y1: 560, x2: 152, y2: HEIGHT - 28, radius: 8, bounce: 0.92 },
-  { x1: WIDTH - 28, y1: 560, x2: WIDTH - 152, y2: HEIGHT - 28, radius: 8, bounce: 0.92 },
+  { x1: WIDTH - 28, y1: RIGHT_WALL_BOTTOM, x2: WIDTH - 142, y2: HEIGHT - 28, radius: 8, bounce: 0.92 },
   { x1: 110, y1: 514, x2: 206, y2: 586, radius: 5, bounce: 0.96 },
   { x1: WIDTH - 110, y1: 514, x2: WIDTH - 206, y2: 586, radius: 5, bounce: 0.96 }
 ];
@@ -84,7 +80,7 @@ function closestPointOnSegment(x, y, x1, y1, x2, y2) {
   return {
     x: x1 + dx * t,
     y: y1 + dy * t,
-    t
+    t: t
   };
 }
 
@@ -97,34 +93,38 @@ function normalizeVector(x, y) {
 }
 
 function createBumpers() {
-  return BUMPER_LAYOUT.map((bumper) => ({
-    x: bumper.x,
-    y: bumper.y,
-    radius: bumper.radius,
-    color: bumper.color,
-    score: bumper.score,
-    flash: 0,
-    cooldown: 0
-  }));
+  return BUMPER_LAYOUT.map(function (bumper) {
+    return {
+      x: bumper.x,
+      y: bumper.y,
+      radius: bumper.radius,
+      color: bumper.color,
+      score: bumper.score,
+      flash: 0,
+      cooldown: 0
+    };
+  });
 }
 
 function createStandups() {
-  return STANDUP_LAYOUT.map((target) => ({
-    x: target.x,
-    y: target.y,
-    width: target.width,
-    height: target.height,
-    color: target.color,
-    score: target.score,
-    flash: 0,
-    cooldown: 0
-  }));
+  return STANDUP_LAYOUT.map(function (target) {
+    return {
+      x: target.x,
+      y: target.y,
+      width: target.width,
+      height: target.height,
+      color: target.color,
+      score: target.score,
+      flash: 0,
+      cooldown: 0
+    };
+  });
 }
 
 function createFlipper(side) {
   const isLeft = side === "left";
   return {
-    side,
+    side: side,
     pivotX: isLeft ? FLIPPER_LEFT_PIVOT.x : FLIPPER_RIGHT_PIVOT.x,
     pivotY: isLeft ? FLIPPER_LEFT_PIVOT.y : FLIPPER_RIGHT_PIVOT.y,
     restAngle: isLeft ? LEFT_REST_ANGLE : RIGHT_REST_ANGLE,
@@ -164,6 +164,7 @@ export function createPinballGame({
   let launchCharge = 0;
   let running = false;
   let gameOver = false;
+  let messageKey = "pinball.message.ready";
   let ball = {
     x: BALL_START_X,
     y: BALL_START_Y,
@@ -176,6 +177,25 @@ export function createPinballGame({
   const rightFlipper = createFlipper("right");
 
   canvas.tabIndex = 0;
+
+  function setMessage(key, params) {
+    messageKey = key;
+    message.textContent = t(key, params);
+  }
+
+  function refreshMessage() {
+    if (messageKey === "pinball.message.gameOver") {
+      message.textContent = t(messageKey, { score: score });
+      return;
+    }
+
+    if (messageKey === "pinball.message.nextBall") {
+      message.textContent = t(messageKey, { balls: ballsRemaining });
+      return;
+    }
+
+    message.textContent = t(messageKey);
+  }
 
   function updateStats() {
     scoreText.textContent = String(score);
@@ -226,7 +246,7 @@ export function createPinballGame({
     rightFlipper.angularVelocity = 0;
     resetBall();
     updateStats();
-    message.textContent = "按住空白鍵或下方向鍵蓄力，左右方向鍵控制擋板。";
+    setMessage("pinball.message.ready");
     render();
     running = true;
     lastTimestamp = 0;
@@ -248,12 +268,17 @@ export function createPinballGame({
       return;
     }
 
+    if (!chargingLaunch && launchCharge === 0) {
+      return;
+    }
+
     const normalizedCharge = Math.max(0.35, launchCharge / MAX_CHARGE);
     chargingLaunch = false;
+    launchCharge = 0;
     launched = true;
     ball.vx = -(2.2 + normalizedCharge * 2.8);
     ball.vy = -(8 + normalizedCharge * 8.5);
-    message.textContent = "彈珠已發射，盡量多撞幾個燈區拿高分。";
+    setMessage("pinball.message.launch");
   }
 
   function setFlipperPressed(side, pressed) {
@@ -266,7 +291,7 @@ export function createPinballGame({
   }
 
   function syncFlippers(delta) {
-    [leftFlipper, rightFlipper].forEach((flipper) => {
+    [leftFlipper, rightFlipper].forEach(function (flipper) {
       const targetAngle = flipper.pressed ? flipper.activeAngle : flipper.restAngle;
       flipper.lastAngle = flipper.angle;
       flipper.angle = approach(flipper.angle, targetAngle, FLIPPER_MOVE_SPEED * delta);
@@ -319,7 +344,7 @@ export function createPinballGame({
   }
 
   function collideWithBumpers() {
-    bumpers.forEach((bumper) => {
+    bumpers.forEach(function (bumper) {
       bumper.flash = Math.max(0, bumper.flash - 1);
       bumper.cooldown = Math.max(0, bumper.cooldown - 1);
 
@@ -332,8 +357,7 @@ export function createPinballGame({
         return;
       }
 
-      const normal =
-        distance > 0 ? { x: dx / distance, y: dy / distance } : { x: 0, y: -1 };
+      const normal = distance > 0 ? { x: dx / distance, y: dy / distance } : { x: 0, y: -1 };
       const overlap = minDistance - distance;
 
       ball.x += normal.x * overlap;
@@ -351,7 +375,7 @@ export function createPinballGame({
   }
 
   function collideWithStandups() {
-    standups.forEach((target) => {
+    standups.forEach(function (target) {
       target.flash = Math.max(0, target.flash - 1);
       target.cooldown = Math.max(0, target.cooldown - 1);
 
@@ -439,13 +463,13 @@ export function createPinballGame({
     if (ballsRemaining <= 0) {
       gameOver = true;
       stop();
-      message.textContent = `遊戲結束，最終分數 ${score}。`;
+      setMessage("pinball.message.gameOver", { score: score });
       render();
       return;
     }
 
     resetBall();
-    message.textContent = `還有 ${ballsRemaining} 顆彈珠，準備下一球。`;
+    setMessage("pinball.message.nextBall", { balls: ballsRemaining });
   }
 
   function updateBall(delta) {
@@ -455,7 +479,7 @@ export function createPinballGame({
       }
 
       ball.x = BALL_START_X;
-      ball.y = BALL_START_Y + launchCharge * 1.4;
+      ball.y = BALL_START_Y + launchCharge * 1.35;
       return;
     }
 
@@ -472,7 +496,7 @@ export function createPinballGame({
       ball.x += ball.vx * stepDelta;
       ball.y += ball.vy * stepDelta;
 
-      TABLE_SEGMENTS.forEach((segment) => {
+      TABLE_SEGMENTS.forEach(function (segment) {
         collideWithSegment(segment);
       });
 
@@ -509,7 +533,7 @@ export function createPinballGame({
     context.lineCap = "round";
     context.lineJoin = "round";
 
-    TABLE_SEGMENTS.forEach((segment) => {
+    TABLE_SEGMENTS.forEach(function (segment) {
       context.strokeStyle = "#f8fafc";
       context.lineWidth = segment.radius * 2;
       context.beginPath();
@@ -527,7 +551,7 @@ export function createPinballGame({
   }
 
   function drawBumpers() {
-    bumpers.forEach((bumper) => {
+    bumpers.forEach(function (bumper) {
       const glowAlpha = bumper.flash > 0 ? 0.28 + bumper.flash * 0.035 : 0.2;
       context.beginPath();
       context.arc(bumper.x, bumper.y, bumper.radius + 11, 0, Math.PI * 2);
@@ -547,9 +571,8 @@ export function createPinballGame({
   }
 
   function drawStandups() {
-    standups.forEach((target) => {
-      const fillColor =
-        target.flash > 0 ? "#fef3c7" : target.color;
+    standups.forEach(function (target) {
+      const fillColor = target.flash > 0 ? "#fef3c7" : target.color;
 
       drawRoundedRect(target.x, target.y, target.width, target.height, 8, fillColor);
       context.strokeStyle = "rgba(15, 23, 42, 0.25)";
@@ -588,17 +611,24 @@ export function createPinballGame({
   }
 
   function drawLaunchLane() {
-    drawRoundedRect(WIDTH - 84, 56, 42, HEIGHT - 118, 16, "rgba(255, 255, 255, 0.08)");
+    drawRoundedRect(
+      LAUNCH_LANE_LEFT,
+      LAUNCH_LANE_TOP,
+      LAUNCH_LANE_WIDTH,
+      LAUNCH_LANE_BOTTOM - LAUNCH_LANE_TOP,
+      16,
+      "rgba(255, 255, 255, 0.08)"
+    );
 
     context.fillStyle = "rgba(255, 255, 255, 0.12)";
-    context.fillRect(WIDTH - 77, HEIGHT - 192, 28, 126);
+    context.fillRect(LAUNCH_LANE_LEFT + 8, HEIGHT - 198, 24, 130);
 
     const meterHeight = 112;
     const meterFill = (launchCharge / MAX_CHARGE) * meterHeight;
     context.fillStyle = "rgba(15, 23, 42, 0.35)";
-    context.fillRect(WIDTH - 73, HEIGHT - 186, 20, meterHeight);
+    context.fillRect(LAUNCH_LANE_LEFT + 10, HEIGHT - 192, 20, meterHeight);
     context.fillStyle = "#f97316";
-    context.fillRect(WIDTH - 73, HEIGHT - 74 - meterFill, 20, meterFill);
+    context.fillRect(LAUNCH_LANE_LEFT + 10, HEIGHT - 80 - meterFill, 20, meterFill);
   }
 
   function drawPlayfield() {
@@ -694,35 +724,49 @@ export function createPinballGame({
   }
 
   function bindHoldControl(element, onPress, onRelease) {
-    element.addEventListener("pointerdown", (event) => {
+    element.addEventListener("pointerdown", function (event) {
       event.preventDefault();
       event.currentTarget.blur();
       onPress();
     });
-    ["pointerup", "pointercancel", "pointerleave"].forEach((type) => {
-      element.addEventListener(type, () => {
+
+    ["pointerup", "pointercancel", "pointerleave"].forEach(function (type) {
+      element.addEventListener(type, function () {
         onRelease();
       });
     });
   }
 
-  btnRestart.addEventListener("click", (event) => {
+  btnRestart.addEventListener("click", function (event) {
     event.currentTarget.blur();
     startNewGame();
   });
 
-  bindHoldControl(btnLeft, () => setFlipperPressed("left", true), () => setFlipperPressed("left", false));
+  bindHoldControl(
+    btnLeft,
+    function () {
+      setFlipperPressed("left", true);
+    },
+    function () {
+      setFlipperPressed("left", false);
+    }
+  );
   bindHoldControl(
     btnRight,
-    () => setFlipperPressed("right", true),
-    () => setFlipperPressed("right", false)
+    function () {
+      setFlipperPressed("right", true);
+    },
+    function () {
+      setFlipperPressed("right", false);
+    }
   );
   bindHoldControl(btnLaunch, beginLaunchCharge, releaseLaunchCharge);
 
   return {
     enter: startNewGame,
     leave: stop,
-    handleKeyDown,
-    handleKeyUp
+    refreshLocale: refreshMessage,
+    handleKeyDown: handleKeyDown,
+    handleKeyUp: handleKeyUp
   };
 }

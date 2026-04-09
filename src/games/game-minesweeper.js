@@ -272,6 +272,7 @@ export function createMinesweeperGame({
             cellElement.classList.add("mine");
             cellElement.textContent = "X";
           } else if (cell.count > 0) {
+            cellElement.classList.add(`count-${cell.count}`);
             cellElement.textContent = String(cell.count);
           } else {
             cellElement.classList.add("empty");
@@ -279,7 +280,7 @@ export function createMinesweeperGame({
           }
         } else if (cell.flagged) {
           cellElement.classList.add("flagged");
-          cellElement.textContent = "F";
+          cellElement.textContent = "🚩";
         }
 
         cellElement.addEventListener("click", function () {

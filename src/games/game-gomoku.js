@@ -1,5 +1,25 @@
 import { t } from "../core/i18n.js";
 
+const BOARD_SIZE = 15;
+const STAR_POINTS = new Set([
+  "3,3",
+  "3,7",
+  "3,11",
+  "7,3",
+  "7,7",
+  "7,11",
+  "11,3",
+  "11,7",
+  "11,11"
+]);
+
+const DIRECTIONS = [
+  [1, 0],
+  [0, 1],
+  [1, 1],
+  [1, -1]
+];
+
 export function createGomokuGame({
   boardElement,
   btnPvp,
@@ -8,14 +28,6 @@ export function createGomokuGame({
   message,
   turnText
 }) {
-  const size = 15;
-  const directions = [
-    [1, 0],
-    [0, 1],
-    [1, 1],
-    [1, -1]
-  ];
-
   let board = [];
   let currentPlayer = "black";
   let gameOver = false;
@@ -23,6 +35,13 @@ export function createGomokuGame({
   let messageState = { type: "start" };
 
   boardElement.tabIndex = 0;
+
+  function getBoardMetrics() {
+    const styles = window.getComputedStyle(boardElement);
+    const gap = Number.parseFloat(styles.getPropertyValue("--gomoku-gap")) || 32;
+    const padding = Number.parseFloat(styles.getPropertyValue("--gomoku-padding")) || 16;
+    return { gap, padding };
+  }
 
   function getPlayerLabel(player) {
     return player === "black" ? t("players.blackStone") : t("players.whiteStone");
@@ -67,8 +86,8 @@ export function createGomokuGame({
   }
 
   function createEmptyBoard() {
-    board = Array.from({ length: size }, function () {
-      return Array(size).fill("");
+    board = Array.from({ length: BOARD_SIZE }, function () {
+      return Array(BOARD_SIZE).fill("");
     });
   }
 
@@ -80,9 +99,9 @@ export function createGomokuGame({
 
     while (
       nextRow >= 0 &&
-      nextRow < size &&
+      nextRow < BOARD_SIZE &&
       nextCol >= 0 &&
-      nextCol < size &&
+      nextCol < BOARD_SIZE &&
       board[nextRow][nextCol] === player
     ) {
       count += 1;
@@ -94,7 +113,7 @@ export function createGomokuGame({
   }
 
   function isWinningMove(row, col) {
-    return directions.some(function ([rowStep, colStep]) {
+    return DIRECTIONS.some(function ([rowStep, colStep]) {
       const lineLength =
         1 +
         countDirection(row, col, rowStep, colStep) +
@@ -113,26 +132,55 @@ export function createGomokuGame({
 
   function render() {
     const fragment = document.createDocumentFragment();
+    const { gap, padding } = getBoardMetrics();
+    const boardSize = padding * 2 + gap * (BOARD_SIZE - 1);
+    const lineLength = gap * (BOARD_SIZE - 1);
 
     boardElement.innerHTML = "";
-    for (let row = 0; row < size; row += 1) {
-      for (let col = 0; col < size; col += 1) {
-        const cell = document.createElement("div");
+    boardElement.style.width = `${boardSize}px`;
+    boardElement.style.height = `${boardSize}px`;
+
+    for (let index = 0; index < BOARD_SIZE; index += 1) {
+      const horizontalLine = document.createElement("div");
+      horizontalLine.className = "gomoku-grid-line gomoku-grid-line--horizontal";
+      horizontalLine.style.left = `${padding}px`;
+      horizontalLine.style.top = `${padding + index * gap}px`;
+      horizontalLine.style.width = `${lineLength}px`;
+      fragment.appendChild(horizontalLine);
+
+      const verticalLine = document.createElement("div");
+      verticalLine.className = "gomoku-grid-line gomoku-grid-line--vertical";
+      verticalLine.style.left = `${padding + index * gap}px`;
+      verticalLine.style.top = `${padding}px`;
+      verticalLine.style.height = `${lineLength}px`;
+      fragment.appendChild(verticalLine);
+    }
+
+    for (let row = 0; row < BOARD_SIZE; row += 1) {
+      for (let col = 0; col < BOARD_SIZE; col += 1) {
+        const point = document.createElement("button");
         const value = board[row][col];
 
-        cell.className = "gomoku-cell";
-        cell.dataset.row = String(row);
-        cell.dataset.col = String(col);
+        point.type = "button";
+        point.className = "gomoku-point";
+        point.dataset.row = String(row);
+        point.dataset.col = String(col);
+        point.style.left = `${padding + col * gap}px`;
+        point.style.top = `${padding + row * gap}px`;
+
+        if (STAR_POINTS.has(`${row},${col}`)) {
+          point.classList.add("star-point");
+        }
 
         if (value) {
           const stone = document.createElement("div");
           stone.className = `gomoku-stone ${value}`;
-          cell.appendChild(stone);
+          point.appendChild(stone);
         } else if (!gameOver && mode === "pvp") {
-          cell.classList.add("clickable");
+          point.classList.add("clickable");
         }
 
-        fragment.appendChild(cell);
+        fragment.appendChild(point);
       }
     }
 
@@ -152,8 +200,8 @@ export function createGomokuGame({
   }
 
   function handleBoardClick(event) {
-    const cell = event.target.closest(".gomoku-cell");
-    if (!cell) {
+    const point = event.target.closest(".gomoku-point");
+    if (!point) {
       return;
     }
 
@@ -167,8 +215,8 @@ export function createGomokuGame({
       return;
     }
 
-    const row = Number(cell.dataset.row);
-    const col = Number(cell.dataset.col);
+    const row = Number(point.dataset.row);
+    const col = Number(point.dataset.col);
     if (board[row][col]) {
       return;
     }

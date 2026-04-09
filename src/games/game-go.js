@@ -1,3 +1,5 @@
+import { t } from "../core/i18n.js";
+
 const SIZE = 19;
 const KOMI = 6.5;
 const STAR_POINTS = new Set(
@@ -11,22 +13,28 @@ const STAR_POINTS = new Set(
     [15, 3],
     [15, 9],
     [15, 15]
-  ].map(([row, col]) => `${row},${col}`)
+  ].map(function ([row, col]) {
+    return `${row},${col}`;
+  })
 );
 
 function createEmptyBoard() {
-  return Array.from({ length: SIZE }, () => Array(SIZE).fill(null));
+  return Array.from({ length: SIZE }, function () {
+    return Array(SIZE).fill(null);
+  });
 }
 
 function cloneBoard(board) {
-  return board.map((row) => [...row]);
+  return board.map(function (row) {
+    return row.slice();
+  });
 }
 
 function serializeBoard(board) {
   return board
-    .map((row) =>
-      row
-        .map((cell) => {
+    .map(function (row) {
+      return row
+        .map(function (cell) {
           if (cell === "black") {
             return "b";
           }
@@ -35,8 +43,8 @@ function serializeBoard(board) {
           }
           return ".";
         })
-        .join("")
-    )
+        .join("");
+    })
     .join("/");
 }
 
@@ -50,15 +58,9 @@ function getNeighbors(row, col) {
     [row + 1, col],
     [row, col - 1],
     [row, col + 1]
-  ].filter(([nextRow, nextCol]) => isInsideBoard(nextRow, nextCol));
-}
-
-function getPlayerLabel(player) {
-  return player === "black" ? "黑棋" : "白棋";
-}
-
-function getOpponent(player) {
-  return player === "black" ? "white" : "black";
+  ].filter(function ([nextRow, nextCol]) {
+    return isInsideBoard(nextRow, nextCol);
+  });
 }
 
 function formatScore(value) {
@@ -76,7 +78,7 @@ function collectGroup(board, startRow, startCol) {
     const [row, col] = queue.shift();
     stones.push({ row, col });
 
-    getNeighbors(row, col).forEach(([nextRow, nextCol]) => {
+    getNeighbors(row, col).forEach(function ([nextRow, nextCol]) {
       const value = board[nextRow][nextCol];
       const key = `${nextRow},${nextCol}`;
 
@@ -96,7 +98,7 @@ function collectGroup(board, startRow, startCol) {
 }
 
 function removeStones(board, stones) {
-  stones.forEach(({ row, col }) => {
+  stones.forEach(function ({ row, col }) {
     board[row][col] = null;
   });
 }
@@ -104,8 +106,8 @@ function removeStones(board, stones) {
 function countBoardStones(board) {
   const counts = { black: 0, white: 0 };
 
-  board.forEach((row) => {
-    row.forEach((cell) => {
+  board.forEach(function (row) {
+    row.forEach(function (cell) {
       if (cell === "black") {
         counts.black += 1;
       } else if (cell === "white") {
@@ -137,7 +139,7 @@ function countTerritory(board) {
         const [currentRow, currentCol] = queue.shift();
         emptyRegion.push([currentRow, currentCol]);
 
-        getNeighbors(currentRow, currentCol).forEach(([nextRow, nextCol]) => {
+        getNeighbors(currentRow, currentCol).forEach(function ([nextRow, nextCol]) {
           const value = board[nextRow][nextCol];
           const key = `${nextRow},${nextCol}`;
 
@@ -170,7 +172,6 @@ function computeAreaScore(board) {
   return {
     black: stones.black + territory.black,
     white: stones.white + territory.white + KOMI,
-    stones,
     territory
   };
 }
@@ -191,44 +192,140 @@ export function createGoGame({
   let gameOver = false;
   let positionHistory = [];
   let lastMove = null;
+  let messageState = { type: "start" };
 
   boardElement.tabIndex = 0;
 
+  function getBoardMetrics() {
+    const styles = window.getComputedStyle(boardElement);
+    const gap = Number.parseFloat(styles.getPropertyValue("--go-gap")) || 30;
+    const padding = Number.parseFloat(styles.getPropertyValue("--go-padding")) || 15;
+    return { gap, padding };
+  }
+
+  function getPlayerLabel(player) {
+    return player === "black" ? t("players.blackStone") : t("players.whiteStone");
+  }
+
+  function getOpponent(player) {
+    return player === "black" ? "white" : "black";
+  }
+
   function updateStats() {
-    turnText.textContent = gameOver ? "對局結束" : getPlayerLabel(currentPlayer);
+    turnText.textContent = gameOver ? t("common.gameOver") : getPlayerLabel(currentPlayer);
     blackCapturesText.textContent = String(captures.black);
     whiteCapturesText.textContent = String(captures.white);
   }
 
+  function renderMessage() {
+    switch (messageState.type) {
+      case "occupied":
+        message.textContent = t("go.message.occupied");
+        return;
+      case "suicide":
+        message.textContent = t("go.message.suicide");
+        return;
+      case "ko":
+        message.textContent = t("go.message.ko");
+        return;
+      case "capture":
+        message.textContent = t("go.message.capture", {
+          player: getPlayerLabel(currentPlayer),
+          count: messageState.count
+        });
+        return;
+      case "pass":
+        message.textContent = t("go.message.pass", {
+          player: getPlayerLabel(messageState.player),
+          nextPlayer: getPlayerLabel(currentPlayer)
+        });
+        return;
+      case "draw":
+        message.textContent = t("go.message.draw", {
+          black: messageState.black,
+          white: messageState.white
+        });
+        return;
+      case "blackWin":
+        message.textContent = t("go.message.blackWin", {
+          black: messageState.black,
+          white: messageState.white
+        });
+        return;
+      case "whiteWin":
+        message.textContent = t("go.message.whiteWin", {
+          black: messageState.black,
+          white: messageState.white
+        });
+        return;
+      case "finished":
+        message.textContent = t("go.message.finished");
+        return;
+      case "turn":
+        message.textContent = t("go.message.turn", {
+          player: getPlayerLabel(currentPlayer)
+        });
+        return;
+      case "start":
+      default:
+        message.textContent = t("go.message.start");
+    }
+  }
+
   function render() {
     const fragment = document.createDocumentFragment();
+    const { gap, padding } = getBoardMetrics();
+    const boardSize = padding * 2 + gap * (SIZE - 1);
+    const lineLength = gap * (SIZE - 1);
 
     boardElement.innerHTML = "";
+    boardElement.style.width = `${boardSize}px`;
+    boardElement.style.height = `${boardSize}px`;
+
+    for (let index = 0; index < SIZE; index += 1) {
+      const horizontalLine = document.createElement("div");
+      horizontalLine.className = "go-grid-line go-grid-line--horizontal";
+      horizontalLine.style.left = `${padding}px`;
+      horizontalLine.style.top = `${padding + index * gap}px`;
+      horizontalLine.style.width = `${lineLength}px`;
+      fragment.appendChild(horizontalLine);
+
+      const verticalLine = document.createElement("div");
+      verticalLine.className = "go-grid-line go-grid-line--vertical";
+      verticalLine.style.left = `${padding + index * gap}px`;
+      verticalLine.style.top = `${padding}px`;
+      verticalLine.style.height = `${lineLength}px`;
+      fragment.appendChild(verticalLine);
+    }
+
     for (let row = 0; row < SIZE; row += 1) {
       for (let col = 0; col < SIZE; col += 1) {
-        const cell = document.createElement("div");
+        const point = document.createElement("button");
         const value = board[row][col];
         const key = `${row},${col}`;
 
-        cell.className = "go-cell";
-        cell.dataset.row = String(row);
-        cell.dataset.col = String(col);
+        point.type = "button";
+        point.className = "go-point";
+        point.dataset.row = String(row);
+        point.dataset.col = String(col);
+        point.style.left = `${padding + col * gap}px`;
+        point.style.top = `${padding + row * gap}px`;
 
         if (STAR_POINTS.has(key)) {
-          cell.classList.add("star-point");
+          point.classList.add("star-point");
         }
 
         if (lastMove && lastMove.row === row && lastMove.col === col) {
-          cell.classList.add("last-move");
+          point.classList.add("last-move");
         }
 
         if (value) {
           const stone = document.createElement("div");
           stone.className = `go-stone ${value}`;
-          cell.appendChild(stone);
+          point.appendChild(stone);
         }
 
-        fragment.appendChild(cell);
+        fragment.appendChild(point);
       }
     }
 
@@ -244,14 +341,16 @@ export function createGoGame({
     gameOver = false;
     positionHistory = [serializeBoard(board)];
     lastMove = null;
+    messageState = { type: "start" };
     render();
-    message.textContent = "黑棋先手，點選交叉點落子。連續兩次虛手會結束對局。";
+    renderMessage();
     boardElement.focus({ preventScroll: true });
   }
 
   function tryPlaceStone(row, col) {
     if (board[row][col] !== null) {
-      message.textContent = "這裡已經有棋子了。";
+      messageState = { type: "occupied" };
+      renderMessage();
       return;
     }
 
@@ -262,7 +361,7 @@ export function createGoGame({
 
     nextBoard[row][col] = currentPlayer;
 
-    getNeighbors(row, col).forEach(([nextRow, nextCol]) => {
+    getNeighbors(row, col).forEach(function ([nextRow, nextCol]) {
       if (nextBoard[nextRow][nextCol] !== opponent) {
         return;
       }
@@ -272,7 +371,7 @@ export function createGoGame({
         return;
       }
 
-      group.stones.forEach((stone) => {
+      group.stones.forEach(function (stone) {
         const key = `${stone.row},${stone.col}`;
         if (!capturedKeys.has(key)) {
           capturedKeys.add(key);
@@ -287,7 +386,8 @@ export function createGoGame({
 
     const ownGroup = collectGroup(nextBoard, row, col);
     if (ownGroup.liberties.size === 0) {
-      message.textContent = "這一步是禁入點，會讓自己的棋群沒有氣。";
+      messageState = { type: "suicide" };
+      renderMessage();
       return;
     }
 
@@ -296,7 +396,8 @@ export function createGoGame({
       positionHistory.length >= 2 &&
       nextSignature === positionHistory[positionHistory.length - 2]
     ) {
-      message.textContent = "這一步會形成打劫重複局面，請先在別處落子。";
+      messageState = { type: "ko" };
+      renderMessage();
       return;
     }
 
@@ -306,13 +407,15 @@ export function createGoGame({
     consecutivePasses = 0;
     positionHistory.push(nextSignature);
     lastMove = { row, col };
-    render();
 
     if (capturedStones.length > 0) {
-      message.textContent = `${getPlayerLabel(opponent)}回合。剛剛提掉了 ${capturedStones.length} 子。`;
+      messageState = { type: "capture", count: capturedStones.length };
     } else {
-      message.textContent = `${getPlayerLabel(opponent)}回合，請落子。`;
+      messageState = { type: "turn" };
     }
+
+    render();
+    renderMessage();
   }
 
   function finishByPasses() {
@@ -321,18 +424,16 @@ export function createGoGame({
     const whiteScore = formatScore(score.white);
 
     gameOver = true;
-    render();
-
     if (score.black === score.white) {
-      message.textContent =
-        `雙方連續虛手，對局結束。採簡化地盤計分：黑 ${blackScore}，白 ${whiteScore}（含貼目 ${KOMI}），雙方平手。`;
+      messageState = { type: "draw", black: blackScore, white: whiteScore };
     } else if (score.black > score.white) {
-      message.textContent =
-        `雙方連續虛手，對局結束。採簡化地盤計分：黑 ${blackScore}，白 ${whiteScore}（含貼目 ${KOMI}），黑棋獲勝。`;
+      messageState = { type: "blackWin", black: blackScore, white: whiteScore };
     } else {
-      message.textContent =
-        `雙方連續虛手，對局結束。採簡化地盤計分：黑 ${blackScore}，白 ${whiteScore}（含貼目 ${KOMI}），白棋獲勝。`;
+      messageState = { type: "whiteWin", black: blackScore, white: whiteScore };
     }
+
+    render();
+    renderMessage();
   }
 
   function handlePass() {
@@ -351,39 +452,45 @@ export function createGoGame({
       return;
     }
 
+    messageState = { type: "pass", player: passingPlayer };
     render();
-    message.textContent = `${getPlayerLabel(passingPlayer)}選擇虛手，輪到${getPlayerLabel(currentPlayer)}。`;
+    renderMessage();
   }
 
   function handleBoardClick(event) {
-    const cell = event.target.closest(".go-cell");
-    if (!cell) {
+    const point = event.target.closest(".go-point");
+    if (!point) {
       return;
     }
 
     if (gameOver) {
-      message.textContent = "這局已經結束了，請重新開始。";
+      messageState = { type: "finished" };
+      renderMessage();
       return;
     }
 
-    const row = Number(cell.dataset.row);
-    const col = Number(cell.dataset.col);
+    const row = Number(point.dataset.row);
+    const col = Number(point.dataset.col);
     tryPlaceStone(row, col);
     boardElement.focus({ preventScroll: true });
   }
 
   boardElement.addEventListener("click", handleBoardClick);
-  btnPass.addEventListener("click", (event) => {
+  btnPass.addEventListener("click", function (event) {
     event.currentTarget.blur();
     handlePass();
     boardElement.focus({ preventScroll: true });
   });
-  btnRestart.addEventListener("click", (event) => {
+  btnRestart.addEventListener("click", function (event) {
     event.currentTarget.blur();
     resetGame();
   });
 
   return {
-    enter: resetGame
+    enter: resetGame,
+    refreshLocale: function () {
+      render();
+      renderMessage();
+    }
   };
 }

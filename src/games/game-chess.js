@@ -1,31 +1,24 @@
+import { t } from "../core/i18n.js";
+
 const BOARD_SIZE = 8;
 
 const PIECE_SYMBOLS = {
   white: {
-    king: "♔",
-    queen: "♕",
-    rook: "♖",
-    bishop: "♗",
-    knight: "♘",
-    pawn: "♙"
+    king: "\u2654",
+    queen: "\u2655",
+    rook: "\u2656",
+    bishop: "\u2657",
+    knight: "\u2658",
+    pawn: "\u2659"
   },
   black: {
-    king: "♚",
-    queen: "♛",
-    rook: "♜",
-    bishop: "♝",
-    knight: "♞",
-    pawn: "♟"
+    king: "\u265A",
+    queen: "\u265B",
+    rook: "\u265C",
+    bishop: "\u265D",
+    knight: "\u265E",
+    pawn: "\u265F"
   }
-};
-
-const PIECE_LABELS = {
-  king: "國王",
-  queen: "皇后",
-  rook: "城堡",
-  bishop: "主教",
-  knight: "騎士",
-  pawn: "兵"
 };
 
 const KNIGHT_OFFSETS = [
@@ -65,15 +58,21 @@ const ROOK_DIRECTIONS = [
 ];
 
 function createPiece(color, type) {
-  return { color, type, moved: false };
+  return { color, type };
 }
 
 function createEmptyBoard() {
-  return Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null));
+  return Array.from({ length: BOARD_SIZE }, function () {
+    return Array(BOARD_SIZE).fill(null);
+  });
 }
 
 function cloneBoard(board) {
-  return board.map((row) => row.map((piece) => (piece ? { ...piece } : null)));
+  return board.map(function (row) {
+    return row.map(function (piece) {
+      return piece ? { ...piece } : null;
+    });
+  });
 }
 
 function isInsideBoard(row, col) {
@@ -81,7 +80,7 @@ function isInsideBoard(row, col) {
 }
 
 function getPlayerLabel(color) {
-  return color === "white" ? "白方" : "黑方";
+  return t(color === "white" ? "players.whiteSide" : "players.blackSide");
 }
 
 function getOpponent(color) {
@@ -89,14 +88,14 @@ function getOpponent(color) {
 }
 
 function getPieceLabel(piece) {
-  return PIECE_LABELS[piece.type];
+  return t(`chess.piece.${piece.type}`);
 }
 
 function buildInitialBoard() {
   const board = createEmptyBoard();
   const backRank = ["rook", "knight", "bishop", "queen", "king", "bishop", "knight", "rook"];
 
-  backRank.forEach((type, col) => {
+  backRank.forEach(function (type, col) {
     board[0][col] = createPiece("black", type);
     board[7][col] = createPiece("white", type);
   });
@@ -109,142 +108,36 @@ function buildInitialBoard() {
   return board;
 }
 
-function findKing(board, color) {
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
-      const piece = board[row][col];
-      if (piece && piece.color === color && piece.type === "king") {
-        return { row, col };
-      }
-    }
-  }
-
-  return null;
-}
-
-function isSquareAttacked(board, row, col, byColor) {
-  const pawnRow = row + (byColor === "white" ? 1 : -1);
-  for (const colOffset of [-1, 1]) {
-    const pawnCol = col + colOffset;
-    if (!isInsideBoard(pawnRow, pawnCol)) {
-      continue;
-    }
-
-    const pawn = board[pawnRow][pawnCol];
-    if (pawn && pawn.color === byColor && pawn.type === "pawn") {
-      return true;
-    }
-  }
-
-  for (const [rowOffset, colOffset] of KNIGHT_OFFSETS) {
-    const nextRow = row + rowOffset;
-    const nextCol = col + colOffset;
-    if (!isInsideBoard(nextRow, nextCol)) {
-      continue;
-    }
-
-    const piece = board[nextRow][nextCol];
-    if (piece && piece.color === byColor && piece.type === "knight") {
-      return true;
-    }
-  }
-
-  for (const [rowStep, colStep] of BISHOP_DIRECTIONS) {
-    let nextRow = row + rowStep;
-    let nextCol = col + colStep;
-
-    while (isInsideBoard(nextRow, nextCol)) {
-      const piece = board[nextRow][nextCol];
-      if (piece) {
-        if (
-          piece.color === byColor &&
-          (piece.type === "bishop" || piece.type === "queen")
-        ) {
-          return true;
-        }
-        break;
-      }
-
-      nextRow += rowStep;
-      nextCol += colStep;
-    }
-  }
-
-  for (const [rowStep, colStep] of ROOK_DIRECTIONS) {
-    let nextRow = row + rowStep;
-    let nextCol = col + colStep;
-
-    while (isInsideBoard(nextRow, nextCol)) {
-      const piece = board[nextRow][nextCol];
-      if (piece) {
-        if (
-          piece.color === byColor &&
-          (piece.type === "rook" || piece.type === "queen")
-        ) {
-          return true;
-        }
-        break;
-      }
-
-      nextRow += rowStep;
-      nextCol += colStep;
-    }
-  }
-
-  for (const [rowOffset, colOffset] of KING_OFFSETS) {
-    const nextRow = row + rowOffset;
-    const nextCol = col + colOffset;
-    if (!isInsideBoard(nextRow, nextCol)) {
-      continue;
-    }
-
-    const piece = board[nextRow][nextCol];
-    if (piece && piece.color === byColor && piece.type === "king") {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function isKingInCheck(board, color) {
-  const kingPosition = findKing(board, color);
-  if (!kingPosition) {
-    return true;
-  }
-
-  return isSquareAttacked(board, kingPosition.row, kingPosition.col, getOpponent(color));
-}
-
-function pushMoveIfAvailable(moves, board, row, col, color, extra = {}) {
+function pushMoveIfAvailable(moves, board, row, col, color) {
   if (!isInsideBoard(row, col)) {
     return;
   }
 
   const target = board[row][col];
   if (!target) {
-    moves.push({ row, col, ...extra });
+    moves.push({ row, col });
     return;
   }
 
-  if (target.color !== color && target.type !== "king") {
-    moves.push({ row, col, isCapture: true, ...extra });
+  if (target.color !== color) {
+    moves.push({ row, col, isCapture: true });
   }
 }
 
 function getSlidingMoves(board, row, col, piece, directions) {
   const moves = [];
 
-  directions.forEach(([rowStep, colStep]) => {
+  directions.forEach(function ([rowStep, colStep]) {
     let nextRow = row + rowStep;
     let nextCol = col + colStep;
 
     while (isInsideBoard(nextRow, nextCol)) {
       const target = board[nextRow][nextCol];
+
       if (!target) {
         moves.push({ row: nextRow, col: nextCol });
       } else {
-        if (target.color !== piece.color && target.type !== "king") {
+        if (target.color !== piece.color) {
           moves.push({ row: nextRow, col: nextCol, isCapture: true });
         }
         break;
@@ -258,7 +151,7 @@ function getSlidingMoves(board, row, col, piece, directions) {
   return moves;
 }
 
-function getPawnMoves(board, row, col, piece, enPassantTarget) {
+function getPawnMoves(board, row, col, piece) {
   const moves = [];
   const direction = piece.color === "white" ? -1 : 1;
   const startRow = piece.color === "white" ? 6 : 1;
@@ -268,57 +161,36 @@ function getPawnMoves(board, row, col, piece, enPassantTarget) {
   if (isInsideBoard(forwardRow, col) && !board[forwardRow][col]) {
     moves.push({
       row: forwardRow,
-      col,
+      col: col,
       promotionType: forwardRow === promotionRow ? "queen" : undefined
     });
 
     const doubleForwardRow = row + direction * 2;
-    if (row === startRow && !board[doubleForwardRow][col]) {
-      moves.push({ row: doubleForwardRow, col });
+    if (row === startRow && isInsideBoard(doubleForwardRow, col) && !board[doubleForwardRow][col]) {
+      moves.push({ row: doubleForwardRow, col: col });
     }
   }
 
-  for (const colOffset of [-1, 1]) {
-    const captureCol = col + colOffset;
+  [-1, 1].forEach(function (colOffset) {
     const captureRow = row + direction;
+    const captureCol = col + colOffset;
+
     if (!isInsideBoard(captureRow, captureCol)) {
-      continue;
+      return;
     }
 
     const target = board[captureRow][captureCol];
-    if (target && target.color !== piece.color && target.type !== "king") {
-      moves.push({
-        row: captureRow,
-        col: captureCol,
-        isCapture: true,
-        promotionType: captureRow === promotionRow ? "queen" : undefined
-      });
-      continue;
+    if (!target || target.color === piece.color) {
+      return;
     }
 
-    if (
-      enPassantTarget &&
-      enPassantTarget.color === getOpponent(piece.color) &&
-      enPassantTarget.row === captureRow &&
-      enPassantTarget.col === captureCol
-    ) {
-      const adjacentPawn = board[row][captureCol];
-      if (
-        adjacentPawn &&
-        adjacentPawn.color === getOpponent(piece.color) &&
-        adjacentPawn.type === "pawn"
-      ) {
-        moves.push({
-          row: captureRow,
-          col: captureCol,
-          isCapture: true,
-          isEnPassant: true,
-          captureRow: row,
-          captureCol
-        });
-      }
-    }
-  }
+    moves.push({
+      row: captureRow,
+      col: captureCol,
+      isCapture: true,
+      promotionType: captureRow === promotionRow ? "queen" : undefined
+    });
+  });
 
   return moves;
 }
@@ -326,7 +198,7 @@ function getPawnMoves(board, row, col, piece, enPassantTarget) {
 function getKnightMoves(board, row, col, piece) {
   const moves = [];
 
-  KNIGHT_OFFSETS.forEach(([rowOffset, colOffset]) => {
+  KNIGHT_OFFSETS.forEach(function ([rowOffset, colOffset]) {
     pushMoveIfAvailable(moves, board, row + rowOffset, col + colOffset, piece.color);
   });
 
@@ -335,61 +207,15 @@ function getKnightMoves(board, row, col, piece) {
 
 function getKingMoves(board, row, col, piece) {
   const moves = [];
-  const opponent = getOpponent(piece.color);
 
-  KING_OFFSETS.forEach(([rowOffset, colOffset]) => {
+  KING_OFFSETS.forEach(function ([rowOffset, colOffset]) {
     pushMoveIfAvailable(moves, board, row + rowOffset, col + colOffset, piece.color);
   });
-
-  if (piece.moved || isKingInCheck(board, piece.color)) {
-    return moves;
-  }
-
-  const rookKingSide = board[row][7];
-  if (
-    rookKingSide &&
-    rookKingSide.color === piece.color &&
-    rookKingSide.type === "rook" &&
-    !rookKingSide.moved &&
-    !board[row][5] &&
-    !board[row][6] &&
-    !isSquareAttacked(board, row, 5, opponent) &&
-    !isSquareAttacked(board, row, 6, opponent)
-  ) {
-    moves.push({
-      row,
-      col: 6,
-      isCastle: true,
-      rookFromCol: 7,
-      rookToCol: 5
-    });
-  }
-
-  const rookQueenSide = board[row][0];
-  if (
-    rookQueenSide &&
-    rookQueenSide.color === piece.color &&
-    rookQueenSide.type === "rook" &&
-    !rookQueenSide.moved &&
-    !board[row][1] &&
-    !board[row][2] &&
-    !board[row][3] &&
-    !isSquareAttacked(board, row, 3, opponent) &&
-    !isSquareAttacked(board, row, 2, opponent)
-  ) {
-    moves.push({
-      row,
-      col: 2,
-      isCastle: true,
-      rookFromCol: 0,
-      rookToCol: 3
-    });
-  }
 
   return moves;
 }
 
-function getPseudoMoves(board, row, col, enPassantTarget) {
+function getLegalMoves(board, row, col) {
   const piece = board[row][col];
   if (!piece) {
     return [];
@@ -397,7 +223,7 @@ function getPseudoMoves(board, row, col, enPassantTarget) {
 
   switch (piece.type) {
     case "pawn":
-      return getPawnMoves(board, row, col, piece, enPassantTarget);
+      return getPawnMoves(board, row, col, piece);
     case "knight":
       return getKnightMoves(board, row, col, piece);
     case "bishop":
@@ -418,78 +244,25 @@ function getPseudoMoves(board, row, col, enPassantTarget) {
 
 function applyMove(board, fromRow, fromCol, move) {
   const nextBoard = cloneBoard(board);
-  const originalPiece = nextBoard[fromRow][fromCol];
-  let movingPiece = { ...originalPiece, moved: true };
-  let capturedPiece = nextBoard[move.row][move.col];
+  const movingPiece = { ...nextBoard[fromRow][fromCol] };
+  const capturedPiece = nextBoard[move.row][move.col];
 
   nextBoard[fromRow][fromCol] = null;
-
-  if (move.isEnPassant) {
-    capturedPiece = nextBoard[move.captureRow][move.captureCol];
-    nextBoard[move.captureRow][move.captureCol] = null;
-  }
-
-  if (move.isCastle) {
-    const rook = { ...nextBoard[fromRow][move.rookFromCol], moved: true };
-    nextBoard[fromRow][move.rookFromCol] = null;
-    nextBoard[fromRow][move.rookToCol] = rook;
-  }
-
   if (move.promotionType) {
-    movingPiece = { ...movingPiece, type: move.promotionType };
+    movingPiece.type = move.promotionType;
   }
-
   nextBoard[move.row][move.col] = movingPiece;
-
-  let nextEnPassantTarget = null;
-  if (originalPiece.type === "pawn" && Math.abs(move.row - fromRow) === 2) {
-    nextEnPassantTarget = {
-      row: (move.row + fromRow) / 2,
-      col: fromCol,
-      color: originalPiece.color
-    };
-  }
 
   return {
     board: nextBoard,
     capturedPiece,
-    originalPiece,
-    movedPiece: movingPiece,
-    nextEnPassantTarget
+    movedPiece: movingPiece
   };
-}
-
-function getLegalMoves(board, row, col, enPassantTarget) {
-  const piece = board[row][col];
-  if (!piece) {
-    return [];
-  }
-
-  return getPseudoMoves(board, row, col, enPassantTarget).filter((move) => {
-    const moveResult = applyMove(board, row, col, move);
-    return !isKingInCheck(moveResult.board, piece.color);
-  });
-}
-
-function hasAnyLegalMoves(board, color, enPassantTarget) {
-  for (let row = 0; row < BOARD_SIZE; row += 1) {
-    for (let col = 0; col < BOARD_SIZE; col += 1) {
-      const piece = board[row][col];
-      if (
-        piece &&
-        piece.color === color &&
-        getLegalMoves(board, row, col, enPassantTarget).length > 0
-      ) {
-        return true;
-      }
-    }
-  }
-
-  return false;
 }
 
 export function createChessGame({
   boardElement,
+  btnAssist,
   btnRestart,
   turnText,
   message
@@ -498,14 +271,19 @@ export function createChessGame({
   let currentPlayer = "white";
   let selected = null;
   let legalMoves = [];
-  let enPassantTarget = null;
   let lastMove = null;
   let gameOver = false;
+  let showHints = true;
+  let messageState = { type: "start" };
 
   boardElement.tabIndex = 0;
 
   function updateTurnText() {
-    turnText.textContent = gameOver ? "對局結束" : getPlayerLabel(currentPlayer);
+    turnText.textContent = gameOver ? t("common.gameOver") : getPlayerLabel(currentPlayer);
+  }
+
+  function updateAssistButton() {
+    btnAssist.classList.toggle("active", showHints);
   }
 
   function clearSelection() {
@@ -514,15 +292,64 @@ export function createChessGame({
   }
 
   function getMoveAt(row, col) {
-    return legalMoves.find((move) => move.row === row && move.col === col);
+    return legalMoves.find(function (move) {
+      return move.row === row && move.col === col;
+    });
+  }
+
+  function renderMessage() {
+    switch (messageState.type) {
+      case "noMoves":
+        message.textContent = t("chess.message.noMoves", {
+          player: getPlayerLabel(messageState.player),
+          piece: getPieceLabel(messageState.piece)
+        });
+        return;
+      case "selected":
+        message.textContent = t("chess.message.selected", {
+          player: getPlayerLabel(messageState.player),
+          piece: getPieceLabel(messageState.piece)
+        });
+        return;
+      case "selectionCleared":
+        message.textContent = t("chess.message.selectionCleared", {
+          player: getPlayerLabel(currentPlayer)
+        });
+        return;
+      case "invalidMove":
+        message.textContent = t("chess.message.invalidMove");
+        return;
+      case "selectOwnPiece":
+        message.textContent = t("chess.message.selectOwnPiece", {
+          player: getPlayerLabel(currentPlayer)
+        });
+        return;
+      case "finished":
+        message.textContent = t("chess.message.finished");
+        return;
+      case "turn":
+        message.textContent = messageState.details
+          .map(function (detail) {
+            return t(detail.key, detail.params);
+          })
+          .join(" ");
+        return;
+      case "kingCaptured":
+        message.textContent = [
+          getPlayerLabel(messageState.player),
+          t("chess.message.captured", {
+            piece: getPieceLabel(messageState.piece)
+          })
+        ].join(" ");
+        return;
+      case "start":
+      default:
+        message.textContent = t("chess.message.start");
+    }
   }
 
   function render() {
     const fragment = document.createDocumentFragment();
-    const checkedKing =
-      !gameOver && isKingInCheck(board, currentPlayer)
-        ? findKing(board, currentPlayer)
-        : null;
 
     boardElement.innerHTML = "";
     for (let row = 0; row < BOARD_SIZE; row += 1) {
@@ -530,6 +357,7 @@ export function createChessGame({
         const cell = document.createElement("div");
         const piece = board[row][col];
         const move = getMoveAt(row, col);
+        const showMoveHint = showHints && Boolean(move);
         const isSelected = selected && selected.row === row && selected.col === col;
         const isLight = (row + col) % 2 === 0;
 
@@ -540,7 +368,7 @@ export function createChessGame({
         if (isSelected) {
           cell.classList.add("selected");
         }
-        if (move) {
+        if (showMoveHint) {
           cell.classList.add("valid");
           if (move.isCapture) {
             cell.classList.add("capture");
@@ -554,16 +382,13 @@ export function createChessGame({
             cell.classList.add("last-to");
           }
         }
-        if (checkedKing && checkedKing.row === row && checkedKing.col === col) {
-          cell.classList.add("checked");
-        }
 
         if (piece) {
           const pieceElement = document.createElement("div");
           pieceElement.className = `chess-piece ${piece.color}`;
           pieceElement.textContent = PIECE_SYMBOLS[piece.color][piece.type];
           cell.appendChild(pieceElement);
-        } else if (move) {
+        } else if (showMoveHint) {
           const dot = document.createElement("div");
           dot.className = "chess-move-dot";
           cell.appendChild(dot);
@@ -575,17 +400,18 @@ export function createChessGame({
 
     boardElement.appendChild(fragment);
     updateTurnText();
+    updateAssistButton();
   }
 
   function startGame() {
     board = buildInitialBoard();
     currentPlayer = "white";
-    enPassantTarget = null;
     lastMove = null;
     gameOver = false;
     clearSelection();
+    messageState = { type: "start" };
     render();
-    message.textContent = "白方先手，請選擇棋子。";
+    renderMessage();
     boardElement.focus({ preventScroll: true });
   }
 
@@ -596,21 +422,23 @@ export function createChessGame({
     }
 
     selected = { row, col };
-    legalMoves = getLegalMoves(board, row, col, enPassantTarget);
+    legalMoves = getLegalMoves(board, row, col);
     render();
 
     if (legalMoves.length === 0) {
-      message.textContent = `${getPlayerLabel(currentPlayer)}的${getPieceLabel(piece)}目前沒有合法走法。`;
+      messageState = { type: "noMoves", player: currentPlayer, piece: piece };
     } else {
-      message.textContent = `${getPlayerLabel(currentPlayer)}已選擇${getPieceLabel(piece)}。`;
+      messageState = { type: "selected", player: currentPlayer, piece: piece };
     }
+    renderMessage();
   }
 
-  function finishGame(resultMessage) {
+  function finishByKingCapture(winner, capturedPiece) {
     gameOver = true;
     clearSelection();
+    messageState = { type: "kingCaptured", player: winner, piece: capturedPiece };
     render();
-    message.textContent = resultMessage;
+    renderMessage();
   }
 
   function moveSelectedPiece(move) {
@@ -619,45 +447,37 @@ export function createChessGame({
     const movingColor = currentPlayer;
     const opponent = getOpponent(movingColor);
     const moveResult = applyMove(board, fromRow, fromCol, move);
-    const detailMessages = [];
+    const details = [];
 
     board = moveResult.board;
-    enPassantTarget = moveResult.nextEnPassantTarget;
     lastMove = { fromRow, fromCol, toRow: move.row, toCol: move.col };
     clearSelection();
 
-    if (move.isCastle) {
-      detailMessages.push("完成王車易位。");
-    }
-    if (moveResult.capturedPiece) {
-      detailMessages.push(`吃掉了對方的${getPieceLabel(moveResult.capturedPiece)}。`);
-    }
-    if (move.promotionType) {
-      detailMessages.push("兵已自動升變為皇后。");
-    }
-
-    const opponentInCheck = isKingInCheck(board, opponent);
-    const opponentHasMoves = hasAnyLegalMoves(board, opponent, enPassantTarget);
-
-    if (!opponentHasMoves) {
-      if (opponentInCheck) {
-        finishGame(`${getPlayerLabel(movingColor)}將死，${getPlayerLabel(movingColor)}獲勝！`);
-      } else {
-        finishGame("雙方無法再走出合法步，這局和棋。");
-      }
+    if (moveResult.capturedPiece && moveResult.capturedPiece.type === "king") {
+      finishByKingCapture(movingColor, moveResult.capturedPiece);
       return;
     }
 
-    currentPlayer = opponent;
-    render();
-
-    if (opponentInCheck) {
-      detailMessages.push(`${getPlayerLabel(opponent)}被將軍，請解圍。`);
-    } else {
-      detailMessages.push(`${getPlayerLabel(opponent)}回合，請走棋。`);
+    if (moveResult.capturedPiece) {
+      details.push({
+        key: "chess.message.captured",
+        params: { piece: getPieceLabel(moveResult.capturedPiece) }
+      });
     }
 
-    message.textContent = detailMessages.join("");
+    if (move.promotionType) {
+      details.push({ key: "chess.message.promoted" });
+    }
+
+    currentPlayer = opponent;
+    details.push({
+      key: "chess.message.turn",
+      params: { player: getPlayerLabel(currentPlayer) }
+    });
+
+    messageState = { type: "turn", details: details };
+    render();
+    renderMessage();
   }
 
   function handleBoardClick(event) {
@@ -667,7 +487,8 @@ export function createChessGame({
     }
 
     if (gameOver) {
-      message.textContent = "這局已經結束了，請重新開始。";
+      messageState = { type: "finished" };
+      renderMessage();
       return;
     }
 
@@ -678,8 +499,9 @@ export function createChessGame({
 
     if (selected && selected.row === row && selected.col === col) {
       clearSelection();
+      messageState = { type: "selectionCleared" };
       render();
-      message.textContent = `${getPlayerLabel(currentPlayer)}回合，請重新選擇棋子。`;
+      renderMessage();
       return;
     }
 
@@ -695,20 +517,28 @@ export function createChessGame({
       return;
     }
 
-    if (selected) {
-      message.textContent = "這一步不合法，請選擇標示的格子。";
-    } else {
-      message.textContent = `${getPlayerLabel(currentPlayer)}回合，請先選擇自己的棋子。`;
-    }
+    messageState = { type: selected ? "invalidMove" : "selectOwnPiece" };
+    renderMessage();
   }
 
   boardElement.addEventListener("click", handleBoardClick);
-  btnRestart.addEventListener("click", (event) => {
+  btnAssist.addEventListener("click", function (event) {
+    event.currentTarget.blur();
+    showHints = !showHints;
+    render();
+    renderMessage();
+    boardElement.focus({ preventScroll: true });
+  });
+  btnRestart.addEventListener("click", function (event) {
     event.currentTarget.blur();
     startGame();
   });
 
   return {
-    enter: startGame
+    enter: startGame,
+    refreshLocale: function () {
+      render();
+      renderMessage();
+    }
   };
 }

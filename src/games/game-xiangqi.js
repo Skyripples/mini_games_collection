@@ -1,3 +1,5 @@
+import { t } from "../core/i18n.js";
+
 const ROWS = 10;
 const COLS = 9;
 
@@ -20,16 +22,6 @@ const PIECE_CHARS = {
     cannon: "砲",
     soldier: "卒"
   }
-};
-
-const PIECE_NAMES = {
-  general: "將",
-  advisor: "士",
-  elephant: "象",
-  horse: "馬",
-  chariot: "車",
-  cannon: "炮",
-  soldier: "兵"
 };
 
 const HORSE_MOVES = [
@@ -65,11 +57,17 @@ const ORTHOGONAL_DIRECTIONS = [
 ];
 
 function createEmptyBoard() {
-  return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
+  return Array.from({ length: ROWS }, function () {
+    return Array(COLS).fill(null);
+  });
 }
 
 function cloneBoard(board) {
-  return board.map((row) => row.map((piece) => (piece ? { ...piece } : null)));
+  return board.map(function (row) {
+    return row.map(function (piece) {
+      return piece ? { ...piece } : null;
+    });
+  });
 }
 
 function isInsideBoard(row, col) {
@@ -93,7 +91,7 @@ function hasCrossedRiver(side, row) {
 }
 
 function getSideLabel(side) {
-  return side === "red" ? "紅方" : "黑方";
+  return t(side === "red" ? "players.redSide" : "players.blackCamp");
 }
 
 function getOpponentSide(side) {
@@ -108,15 +106,19 @@ function keyForPosition(row, col) {
   return `${row},${col}`;
 }
 
+function getPieceLabel(piece) {
+  return t(`xiangqi.piece.${piece.type}`);
+}
+
 function buildInitialBoard() {
   const board = createEmptyBoard();
 
-  const place = (row, col, side, type) => {
+  function place(row, col, side, type) {
     board[row][col] = createPiece(side, type);
-  };
+  }
 
   ["chariot", "horse", "elephant", "advisor", "general", "advisor", "elephant", "horse", "chariot"]
-    .forEach((type, col) => {
+    .forEach(function (type, col) {
       place(0, col, "black", type);
       place(9, col, "red", type);
     });
@@ -126,25 +128,12 @@ function buildInitialBoard() {
   place(7, 1, "red", "cannon");
   place(7, 7, "red", "cannon");
 
-  [0, 2, 4, 6, 8].forEach((col) => {
+  [0, 2, 4, 6, 8].forEach(function (col) {
     place(3, col, "black", "soldier");
     place(6, col, "red", "soldier");
   });
 
   return board;
-}
-
-function getGeneralPosition(board, side) {
-  for (let row = 0; row < ROWS; row += 1) {
-    for (let col = 0; col < COLS; col += 1) {
-      const piece = board[row][col];
-      if (piece && piece.side === side && piece.type === "general") {
-        return { row, col };
-      }
-    }
-  }
-
-  return null;
 }
 
 function addMoveIfAvailable(board, moves, side, row, col) {
@@ -158,10 +147,10 @@ function addMoveIfAvailable(board, moves, side, row, col) {
   }
 }
 
-function getGeneralRawMoves(board, row, col, piece) {
+function getGeneralMoves(board, row, col, piece) {
   const moves = [];
 
-  ORTHOGONAL_DIRECTIONS.forEach(([rowStep, colStep]) => {
+  ORTHOGONAL_DIRECTIONS.forEach(function ([rowStep, colStep]) {
     const nextRow = row + rowStep;
     const nextCol = col + colStep;
     if (isInsidePalace(piece.side, nextRow, nextCol)) {
@@ -169,27 +158,27 @@ function getGeneralRawMoves(board, row, col, piece) {
     }
   });
 
-  for (const rowStep of [-1, 1]) {
+  [-1, 1].forEach(function (rowStep) {
     let nextRow = row + rowStep;
     while (isInsideBoard(nextRow, col)) {
       const target = board[nextRow][col];
       if (target) {
         if (target.side !== piece.side && target.type === "general") {
-          moves.push({ row: nextRow, col });
+          moves.push({ row: nextRow, col: col });
         }
         break;
       }
       nextRow += rowStep;
     }
-  }
+  });
 
   return moves;
 }
 
-function getAdvisorRawMoves(board, row, col, piece) {
+function getAdvisorMoves(board, row, col, piece) {
   const moves = [];
 
-  ADVISOR_MOVES.forEach(([rowOffset, colOffset]) => {
+  ADVISOR_MOVES.forEach(function ([rowOffset, colOffset]) {
     const nextRow = row + rowOffset;
     const nextCol = col + colOffset;
     if (isInsidePalace(piece.side, nextRow, nextCol)) {
@@ -200,10 +189,15 @@ function getAdvisorRawMoves(board, row, col, piece) {
   return moves;
 }
 
-function getElephantRawMoves(board, row, col, piece) {
+function getElephantMoves(board, row, col, piece) {
   const moves = [];
 
-  ELEPHANT_MOVES.forEach(({ rowOffset, colOffset, eyeRowOffset, eyeColOffset }) => {
+  ELEPHANT_MOVES.forEach(function ({
+    rowOffset,
+    colOffset,
+    eyeRowOffset,
+    eyeColOffset
+  }) {
     const nextRow = row + rowOffset;
     const nextCol = col + colOffset;
     const eyeRow = row + eyeRowOffset;
@@ -227,10 +221,15 @@ function getElephantRawMoves(board, row, col, piece) {
   return moves;
 }
 
-function getHorseRawMoves(board, row, col, piece) {
+function getHorseMoves(board, row, col, piece) {
   const moves = [];
 
-  HORSE_MOVES.forEach(({ rowOffset, colOffset, legRowOffset, legColOffset }) => {
+  HORSE_MOVES.forEach(function ({
+    rowOffset,
+    colOffset,
+    legRowOffset,
+    legColOffset
+  }) {
     const legRow = row + legRowOffset;
     const legCol = col + legColOffset;
     const nextRow = row + rowOffset;
@@ -246,10 +245,10 @@ function getHorseRawMoves(board, row, col, piece) {
   return moves;
 }
 
-function getSlidingRawMoves(board, row, col, piece, isCannon) {
+function getSlidingMoves(board, row, col, piece, isCannon) {
   const moves = [];
 
-  ORTHOGONAL_DIRECTIONS.forEach(([rowStep, colStep]) => {
+  ORTHOGONAL_DIRECTIONS.forEach(function ([rowStep, colStep]) {
     let nextRow = row + rowStep;
     let nextCol = col + colStep;
     let jumped = false;
@@ -287,7 +286,7 @@ function getSlidingRawMoves(board, row, col, piece, isCannon) {
   return moves;
 }
 
-function getSoldierRawMoves(board, row, col, piece) {
+function getSoldierMoves(board, row, col, piece) {
   const moves = [];
   const forwardStep = piece.side === "red" ? -1 : 1;
 
@@ -301,7 +300,7 @@ function getSoldierRawMoves(board, row, col, piece) {
   return moves;
 }
 
-function getRawMoves(board, row, col) {
+function getLegalMoves(board, row, col) {
   const piece = board[row][col];
   if (!piece) {
     return [];
@@ -309,19 +308,19 @@ function getRawMoves(board, row, col) {
 
   switch (piece.type) {
     case "general":
-      return getGeneralRawMoves(board, row, col, piece);
+      return getGeneralMoves(board, row, col, piece);
     case "advisor":
-      return getAdvisorRawMoves(board, row, col, piece);
+      return getAdvisorMoves(board, row, col, piece);
     case "elephant":
-      return getElephantRawMoves(board, row, col, piece);
+      return getElephantMoves(board, row, col, piece);
     case "horse":
-      return getHorseRawMoves(board, row, col, piece);
+      return getHorseMoves(board, row, col, piece);
     case "chariot":
-      return getSlidingRawMoves(board, row, col, piece, false);
+      return getSlidingMoves(board, row, col, piece, false);
     case "cannon":
-      return getSlidingRawMoves(board, row, col, piece, true);
+      return getSlidingMoves(board, row, col, piece, true);
     case "soldier":
-      return getSoldierRawMoves(board, row, col, piece);
+      return getSoldierMoves(board, row, col, piece);
     default:
       return [];
   }
@@ -329,67 +328,20 @@ function getRawMoves(board, row, col) {
 
 function applyMove(board, fromRow, fromCol, toRow, toCol) {
   const nextBoard = cloneBoard(board);
+  const capturedPiece = nextBoard[toRow][toCol];
+
   nextBoard[toRow][toCol] = nextBoard[fromRow][fromCol];
   nextBoard[fromRow][fromCol] = null;
-  return nextBoard;
-}
 
-function isGeneralThreatened(board, side) {
-  const generalPosition = getGeneralPosition(board, side);
-  if (!generalPosition) {
-    return true;
-  }
-
-  const opponentSide = getOpponentSide(side);
-  for (let row = 0; row < ROWS; row += 1) {
-    for (let col = 0; col < COLS; col += 1) {
-      const piece = board[row][col];
-      if (!piece || piece.side !== opponentSide) {
-        continue;
-      }
-
-      const moves = getRawMoves(board, row, col);
-      if (
-        moves.some(
-          (move) =>
-            move.row === generalPosition.row && move.col === generalPosition.col
-        )
-      ) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-function getLegalMoves(board, row, col) {
-  const piece = board[row][col];
-  if (!piece) {
-    return [];
-  }
-
-  return getRawMoves(board, row, col).filter((move) => {
-    const nextBoard = applyMove(board, row, col, move.row, move.col);
-    return !isGeneralThreatened(nextBoard, piece.side);
-  });
-}
-
-function hasAnyLegalMoves(board, side) {
-  for (let row = 0; row < ROWS; row += 1) {
-    for (let col = 0; col < COLS; col += 1) {
-      const piece = board[row][col];
-      if (piece && piece.side === side && getLegalMoves(board, row, col).length > 0) {
-        return true;
-      }
-    }
-  }
-
-  return false;
+  return {
+    board: nextBoard,
+    capturedPiece
+  };
 }
 
 export function createXiangqiGame({
   boardElement,
+  btnAssist,
   btnRestart,
   turnText,
   message
@@ -399,11 +351,17 @@ export function createXiangqiGame({
   let selected = null;
   let legalMoves = [];
   let gameOver = false;
+  let showHints = true;
+  let messageState = { type: "start" };
 
   boardElement.tabIndex = 0;
 
   function updateTurnText() {
-    turnText.textContent = getSideLabel(currentSide);
+    turnText.textContent = gameOver ? t("common.gameOver") : getSideLabel(currentSide);
+  }
+
+  function updateAssistButton() {
+    btnAssist.classList.toggle("active", showHints);
   }
 
   function resetSelection() {
@@ -411,13 +369,62 @@ export function createXiangqiGame({
     legalMoves = [];
   }
 
-  function getPieceLabel(piece) {
-    return PIECE_NAMES[piece.type];
+  function renderMessage() {
+    switch (messageState.type) {
+      case "noMoves":
+        message.textContent = t("xiangqi.message.noMoves", {
+          player: getSideLabel(messageState.side),
+          piece: getPieceLabel(messageState.piece)
+        });
+        return;
+      case "selected":
+        message.textContent = t("xiangqi.message.selected", {
+          player: getSideLabel(messageState.side),
+          piece: getPieceLabel(messageState.piece)
+        });
+        return;
+      case "selectionCleared":
+        message.textContent = t("xiangqi.message.selectionCleared", {
+          player: getSideLabel(currentSide)
+        });
+        return;
+      case "invalidMove":
+        message.textContent = t("xiangqi.message.invalidMove");
+        return;
+      case "selectOwnPiece":
+        message.textContent = t("xiangqi.message.selectOwnPiece", {
+          player: getSideLabel(currentSide)
+        });
+        return;
+      case "finished":
+        message.textContent = t("common.gameOver");
+        return;
+      case "turn":
+        message.textContent = t("xiangqi.message.turn", {
+          player: getSideLabel(currentSide)
+        });
+        return;
+      case "win":
+        message.textContent = [
+          getSideLabel(messageState.side),
+          t("xiangqi.message.captureGeneral")
+        ].join(" ");
+        return;
+      case "start":
+      default:
+        message.textContent = t("xiangqi.message.start");
+    }
   }
 
   function render() {
     const fragment = document.createDocumentFragment();
-    const legalMoveSet = new Set(legalMoves.map((move) => keyForPosition(move.row, move.col)));
+    const legalMoveSet = new Set(
+      showHints
+        ? legalMoves.map(function (move) {
+            return keyForPosition(move.row, move.col);
+          })
+        : []
+    );
 
     boardElement.innerHTML = "";
 
@@ -458,25 +465,18 @@ export function createXiangqiGame({
     }
 
     boardElement.appendChild(fragment);
-  }
-
-  function finishGame(winnerSide, detail) {
-    gameOver = true;
-    currentSide = winnerSide;
     updateTurnText();
-    resetSelection();
-    render();
-    message.textContent = `${getSideLabel(winnerSide)}獲勝！${detail}`;
+    updateAssistButton();
   }
 
   function startGame() {
     board = buildInitialBoard();
     currentSide = "red";
     gameOver = false;
-    updateTurnText();
     resetSelection();
+    messageState = { type: "start" };
     render();
-    message.textContent = "紅方先手，請先選擇棋子。";
+    renderMessage();
     boardElement.focus({ preventScroll: true });
   }
 
@@ -486,76 +486,68 @@ export function createXiangqiGame({
       return;
     }
 
-    const nextLegalMoves = getLegalMoves(board, row, col);
     selected = { row, col };
-    legalMoves = nextLegalMoves;
+    legalMoves = getLegalMoves(board, row, col);
     render();
 
-    if (nextLegalMoves.length === 0) {
-      message.textContent = `${getSideLabel(currentSide)}的${getPieceLabel(piece)}目前沒有合法走法。`;
+    if (legalMoves.length === 0) {
+      messageState = { type: "noMoves", side: currentSide, piece: piece };
     } else {
-      message.textContent = `${getSideLabel(currentSide)}已選擇${getPieceLabel(piece)}，請點選目標位置。`;
+      messageState = { type: "selected", side: currentSide, piece: piece };
     }
+    renderMessage();
   }
 
   function moveSelectedPiece(toRow, toCol) {
     const fromRow = selected.row;
     const fromCol = selected.col;
-    const movingPiece = board[fromRow][fromCol];
-    const capturedPiece = board[toRow][toCol];
     const movingSide = currentSide;
     const opponentSide = getOpponentSide(movingSide);
+    const moveResult = applyMove(board, fromRow, fromCol, toRow, toCol);
 
-    board = applyMove(board, fromRow, fromCol, toRow, toCol);
+    board = moveResult.board;
     resetSelection();
 
-    if (capturedPiece && capturedPiece.type === "general") {
-      finishGame(movingSide, "成功吃掉對方的將。");
-      return;
-    }
-
-    const opponentInCheck = isGeneralThreatened(board, opponentSide);
-    const opponentHasLegalMoves = hasAnyLegalMoves(board, opponentSide);
-
-    if (!opponentHasLegalMoves) {
-      finishGame(
-        movingSide,
-        opponentInCheck ? "對方無法解將。" : "對方已無合法走法。"
-      );
+    if (moveResult.capturedPiece && moveResult.capturedPiece.type === "general") {
+      gameOver = true;
+      messageState = { type: "win", side: movingSide };
+      render();
+      renderMessage();
       return;
     }
 
     currentSide = opponentSide;
-    updateTurnText();
+    messageState = { type: "turn" };
     render();
-
-    if (opponentInCheck) {
-      message.textContent = `${getSideLabel(currentSide)}被將軍，請應將。`;
-    } else {
-      message.textContent = `${getSideLabel(currentSide)}回合，請走棋。`;
-    }
+    renderMessage();
   }
 
   function handleBoardClick(event) {
     const cell = event.target.closest(".xiangqi-cell");
-    if (!cell || gameOver) {
+    if (!cell) {
+      return;
+    }
+
+    if (gameOver) {
+      messageState = { type: "finished" };
+      renderMessage();
       return;
     }
 
     const row = Number(cell.dataset.row);
     const col = Number(cell.dataset.col);
     const piece = board[row][col];
+    const isLegalMove = legalMoves.some(function (move) {
+      return move.row === row && move.col === col;
+    });
 
     if (selected && selected.row === row && selected.col === col) {
       resetSelection();
+      messageState = { type: "selectionCleared" };
       render();
-      message.textContent = `${getSideLabel(currentSide)}回合，請重新選擇棋子。`;
+      renderMessage();
       return;
     }
-
-    const isLegalMove = legalMoves.some(
-      (move) => move.row === row && move.col === col
-    );
 
     if (selected && isLegalMove) {
       moveSelectedPiece(row, col);
@@ -569,20 +561,28 @@ export function createXiangqiGame({
       return;
     }
 
-    if (selected) {
-      message.textContent = "這個位置不能這樣走。";
-    } else {
-      message.textContent = `${getSideLabel(currentSide)}回合，請先選擇自己的棋子。`;
-    }
+    messageState = { type: selected ? "invalidMove" : "selectOwnPiece" };
+    renderMessage();
   }
 
   boardElement.addEventListener("click", handleBoardClick);
-  btnRestart.addEventListener("click", (event) => {
+  btnAssist.addEventListener("click", function (event) {
+    event.currentTarget.blur();
+    showHints = !showHints;
+    render();
+    renderMessage();
+    boardElement.focus({ preventScroll: true });
+  });
+  btnRestart.addEventListener("click", function (event) {
     event.currentTarget.blur();
     startGame();
   });
 
   return {
-    enter: startGame
+    enter: startGame,
+    refreshLocale: function () {
+      render();
+      renderMessage();
+    }
   };
 }

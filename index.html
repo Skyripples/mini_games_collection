@@ -54,7 +54,7 @@
       </div>
 
       <div id="game-1a2b" class="game-panel hidden">
-        <h2 data-i18n="1a2b.title">1A2B</h2>
+        <h2 data-i18n="1a2b.title">猜數字</h2>
         <p data-i18n="1a2b.description">頛詨 4 ?????摮???梯?蝑???</p>
 
         <div class="input-row">
@@ -79,7 +79,17 @@
         </div>
         <p><span data-i18n="common.score">?嚗?</span><span id="snake-score">0</span></p>
         <p id="snake-message">???批蝘餃?嚗??圈??拙停???瑯?</p>
-        <canvas id="snake-canvas" width="400" height="400"></canvas>
+        <div class="snake-layout">
+          <canvas id="snake-canvas" width="400" height="400"></canvas>
+          <div class="snake-touch-controls">
+            <button id="btn-snake-up" data-i18n="pacman.up">銝?</button>
+            <div class="snake-touch-middle">
+              <button id="btn-snake-left" data-i18n="pacman.left">撌?</button>
+              <button id="btn-snake-down" data-i18n="pacman.down">銝?</button>
+              <button id="btn-snake-right" data-i18n="pacman.right">??</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div id="game-minesweeper" class="game-panel hidden">
@@ -209,6 +219,7 @@
       <div id="game-chess" class="game-panel hidden">
         <h2 data-i18n="chess.title">镼踵?璉?</h2>
         <div class="input-row">
+          <button id="btn-assist-chess" class="mode-button active">輔助</button>
           <button id="btn-restart-chess" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">
@@ -290,6 +301,7 @@
         <div class="input-row">
           <button id="btn-reversi-pvp" class="mode-button" data-i18n="common.playerVsPlayer">?摰嗅???</button>
           <button id="btn-reversi-cpu" class="mode-button" data-i18n="common.playerVsComputer">??血???</button>
+          <button id="btn-assist-reversi" class="mode-button active">輔助</button>
           <button id="btn-restart-reversi" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">
@@ -333,6 +345,7 @@
       <div id="game-xiangqi" class="game-panel hidden">
         <h2 data-i18n="xiangqi.title">鞊⊥?</h2>
         <div class="input-row">
+          <button id="btn-assist-xiangqi" class="mode-button active">輔助</button>
           <button id="btn-restart-xiangqi" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">

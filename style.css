@@ -358,7 +358,7 @@ button:hover:enabled {
 }
 
 .thumb--1a2b::after {
-  content: "2A1B";
+  content: "1A2B";
   right: 18px;
   bottom: 16px;
   padding: 6px 10px;
@@ -776,170 +776,6 @@ button:hover:enabled {
     96px 24px 0 #111827;
 }
 
-.menu-card {
-  min-height: 248px;
-}
-
-.menu-card__thumb {
-  --icon-tile: linear-gradient(180deg, #1f2937 0%, #0f172a 100%);
-  --icon-art: none;
-  --icon-art-size: 84% 84%;
-  --icon-art-position: 50% 50%;
-  position: relative;
-  width: 116px;
-  height: 116px;
-  aspect-ratio: 1 / 1;
-  align-self: center;
-  border-radius: 30px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.54);
-  background:
-    radial-gradient(circle at 24% 16%, rgba(255, 255, 255, 0.34), transparent 28%),
-    radial-gradient(circle at 78% 84%, rgba(15, 23, 42, 0.2), transparent 34%),
-    var(--icon-tile);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.3),
-    inset 0 -14px 22px rgba(15, 23, 42, 0.14),
-    0 16px 26px rgba(15, 23, 42, 0.16);
-  transition: transform 160ms ease, box-shadow 160ms ease;
-}
-
-.menu-card:hover:enabled .menu-card__thumb {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.34),
-    inset 0 -14px 22px rgba(15, 23, 42, 0.14),
-    0 18px 30px rgba(15, 23, 42, 0.22);
-}
-
-.menu-card__thumb::before,
-.menu-card__thumb::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.menu-card__thumb::before {
-  inset: 7px;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 44%);
-}
-
-.menu-card__thumb::after {
-  background-image: var(--icon-art);
-  background-position: var(--icon-art-position);
-  background-repeat: no-repeat;
-  background-size: var(--icon-art-size);
-}
-
-.thumb--1a2b {
-  --icon-tile: linear-gradient(180deg, #1f3455 0%, #0f1b2f 100%);
-  --icon-art: url("assets/icons/1a2b.svg");
-  --icon-art-size: 84% 84%;
-}
-
-.thumb--tictactoe {
-  --icon-tile: linear-gradient(180deg, #f4f4f5 0%, #e8e9ef 100%);
-  --icon-art: url("assets/icons/tictactoe.svg");
-  --icon-art-size: 83% 83%;
-  --icon-art-position: 50% 50%;
-}
-
-.thumb--snake {
-  --icon-tile: linear-gradient(180deg, #173f2a 0%, #0f2c1c 100%);
-  --icon-art: url("assets/icons/snake.svg");
-  --icon-art-size: 84% 84%;
-  --icon-art-position: 50% 52%;
-}
-
-.thumb--2048 {
-  --icon-tile: linear-gradient(180deg, #d1bba9 0%, #b89e8b 100%);
-  --icon-art: url("assets/icons/2048.svg");
-  --icon-art-size: 83% 83%;
-}
-
-.thumb--breakout {
-  --icon-tile: linear-gradient(180deg, #152b4b 0%, #091728 100%);
-  --icon-art: url("assets/icons/breakout.svg");
-  --icon-art-size: 84% 84%;
-  --icon-art-position: 50% 52%;
-}
-
-.thumb--dino {
-  --icon-tile: linear-gradient(180deg, #f7fafc 0%, #d9e2ec 100%);
-  --icon-art: url("assets/icons/dino.svg");
-  --icon-art-size: 84% 84%;
-  --icon-art-position: 49% 53%;
-}
-
-.thumb--minesweeper {
-  --icon-tile: linear-gradient(180deg, #ececec 0%, #d7d7d8 100%);
-  --icon-art: url("assets/icons/minesweeper.svg");
-  --icon-art-size: 82% 82%;
-  --icon-art-position: 50% 50%;
-}
-
-.thumb--sudoku {
-  --icon-tile: linear-gradient(180deg, #fdf4d0 0%, #f2e2ae 100%);
-  --icon-art: url("assets/icons/sudoku.svg");
-  --icon-art-size: 86% 86%;
-  --icon-art-position: 50% 50%;
-}
-
-.thumb--gomoku {
-  --icon-tile: linear-gradient(180deg, #f1c274 0%, #da9f4a 100%);
-  --icon-art: url("assets/icons/gomoku.svg");
-  --icon-art-size: 82% 82%;
-}
-
-.thumb--reversi {
-  --icon-tile: linear-gradient(180deg, #166534 0%, #12462b 100%);
-  --icon-art: url("assets/icons/reversi.svg");
-  --icon-art-size: 82% 82%;
-}
-
-.thumb--tetris {
-  --icon-tile: linear-gradient(180deg, #1f295c 0%, #10173d 100%);
-  --icon-art: url("assets/icons/tetris.svg");
-  --icon-art-size: 82% 82%;
-  --icon-art-position: 50% 53%;
-}
-
-.thumb--pinball {
-  --icon-tile: linear-gradient(180deg, #173b6d 0%, #0d2141 100%);
-  --icon-art: url("assets/icons/pinball.svg");
-  --icon-art-size: 84% 84%;
-  --icon-art-position: 50% 52%;
-}
-
-.thumb--pacman {
-  --icon-tile: linear-gradient(180deg, #242228 0%, #151419 100%);
-  --icon-art: url("assets/icons/pacman.svg");
-  --icon-art-size: 82% 82%;
-  --icon-art-position: 48% 50%;
-}
-
-.thumb--chess {
-  --icon-tile: linear-gradient(180deg, #d6bd94 0%, #8f6640 100%);
-  --icon-art: url("assets/icons/chess.svg");
-  --icon-art-size: 84% 84%;
-  --icon-art-position: 50% 53%;
-}
-
-.thumb--xiangqi {
-  --icon-tile: linear-gradient(180deg, #efc58d 0%, #d99c5c 100%);
-  --icon-art: url("assets/icons/xiangqi.svg");
-  --icon-art-size: 84% 84%;
-}
-
-.thumb--go {
-  --icon-tile: linear-gradient(180deg, #efc680 0%, #d79d58 100%);
-  --icon-art: url("assets/icons/go.svg");
-  --icon-art-size: 82% 82%;
-}
-
 button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
@@ -1076,6 +912,36 @@ input {
   height: auto;
 }
 
+.snake-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.snake-touch-controls {
+  display: none;
+  width: min(100%, 240px);
+  gap: 10px;
+}
+
+.snake-touch-controls > button,
+.snake-touch-middle button {
+  min-height: 56px;
+  touch-action: manipulation;
+}
+
+.snake-touch-controls > button {
+  width: 72px;
+  justify-self: center;
+}
+
+.snake-touch-middle {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
 .board-scroll {
   max-width: 100%;
   overflow-x: auto;
@@ -1107,6 +973,7 @@ input {
 
 .cell.revealed {
   background: #f5f5f5;
+  color: #1f2937;
   cursor: default;
 }
 
@@ -1116,10 +983,44 @@ input {
 
 .cell.flagged {
   background: #ffeaa7;
+  color: #b91c1c;
 }
 
 .cell.mine {
   background: #ff7675;
+  color: #1f2937;
+}
+
+.cell.count-1 {
+  color: #2563eb;
+}
+
+.cell.count-2 {
+  color: #15803d;
+}
+
+.cell.count-3 {
+  color: #dc2626;
+}
+
+.cell.count-4 {
+  color: #1d4ed8;
+}
+
+.cell.count-5 {
+  color: #7c2d12;
+}
+
+.cell.count-6 {
+  color: #0f766e;
+}
+
+.cell.count-7 {
+  color: #111827;
+}
+
+.cell.count-8 {
+  color: #475569;
 }
 
 .board-2048 {
@@ -1593,32 +1494,75 @@ input {
 
 
 .gomoku-board {
-  display: grid;
-  grid-template-columns: repeat(15, 32px);
-  grid-auto-rows: 32px;
+  --gomoku-gap: 32px;
+  --gomoku-padding: 16px;
+  --gomoku-stone-size: 24px;
+  position: relative;
+  display: block;
   width: max-content;
-  background: #cda66b;
-  border: 1px solid #8b6b3c;
   margin-top: 16px;
+  border: 3px solid #3f2a16;
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(120, 72, 22, 0.08)),
+    #d6a35f;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  overflow: visible;
 }
 
-.gomoku-cell {
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgba(90, 64, 32, 0.35);
+.gomoku-grid-line {
+  position: absolute;
+  background: rgba(44, 28, 14, 0.9);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gomoku-grid-line--horizontal {
+  height: 1px;
+  transform: translateY(-0.5px);
+}
+
+.gomoku-grid-line--vertical {
+  width: 1px;
+  transform: translateX(-0.5px);
+}
+
+.gomoku-point {
+  position: absolute;
+  width: var(--gomoku-gap);
+  height: var(--gomoku-gap);
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: default;
+  z-index: 1;
 }
 
-.gomoku-cell.clickable {
+.gomoku-point:hover:enabled {
+  background: transparent;
+}
+
+.gomoku-point.clickable {
   cursor: pointer;
 }
 
+.gomoku-point.star-point::before {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(44, 28, 14, 0.9);
+}
+
 .gomoku-stone {
-  width: 24px;
-  height: 24px;
+  width: var(--gomoku-stone-size);
+  height: var(--gomoku-stone-size);
   border-radius: 50%;
   box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.3), 0 2px 5px rgba(0, 0, 0, 0.25);
 }
@@ -1724,8 +1668,10 @@ input {
   width: max-content;
   background: #1f2937;
   gap: 1px;
-  padding: 2px;
-  border-radius: 10px;
+  padding: 1px;
+  border: 2px solid #1f2937;
+  border-radius: 12px;
+  overflow: hidden;
   margin-top: 16px;
 }
 
@@ -1787,6 +1733,14 @@ input {
 .sudoku-number-button {
   padding: 12px 0;
   font-size: 18px;
+}
+
+.sudoku-action-button {
+  min-height: 50px;
+  padding: 8px 6px;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: normal;
 }
 
 .sudoku-number-button.clear {
@@ -1889,30 +1843,60 @@ input {
 }
 
 .go-board {
-  display: grid;
-  grid-template-columns: repeat(19, 30px);
-  grid-auto-rows: 30px;
-  gap: 0;
+  --go-gap: 30px;
+  --go-padding: 15px;
+  --go-stone-size: 24px;
+  position: relative;
+  display: block;
   width: max-content;
   margin-top: 16px;
-  padding: 14px;
-  border: 2px solid #8b5e2f;
-  border-radius: 12px;
-  background: linear-gradient(180deg, #ddb274 0%, #c88f4d 100%);
+  border: 3px solid #3f2a16;
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(120, 72, 22, 0.08)),
+    #d6a35f;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  overflow: visible;
 }
 
-.go-cell {
-  width: 30px;
-  height: 30px;
-  border: 1px solid rgba(92, 57, 19, 0.55);
+.go-grid-line {
+  position: absolute;
+  background: rgba(44, 28, 14, 0.9);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.go-grid-line--horizontal {
+  height: 1px;
+  transform: translateY(-0.5px);
+}
+
+.go-grid-line--vertical {
+  width: 1px;
+  transform: translateX(-0.5px);
+}
+
+.go-point {
+  position: absolute;
+  width: var(--go-gap);
+  height: var(--go-gap);
+  transform: translate(-50%, -50%);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
   cursor: pointer;
+  z-index: 1;
 }
 
-.go-cell.star-point::before {
+.go-point:hover:enabled {
+  background: transparent;
+}
+
+.go-point.star-point::before {
   content: "";
   width: 6px;
   height: 6px;
@@ -1921,7 +1905,7 @@ input {
   position: absolute;
 }
 
-.go-cell.last-move .go-stone::after {
+.go-point.last-move .go-stone::after {
   content: "";
   width: 8px;
   height: 8px;
@@ -1931,8 +1915,8 @@ input {
 }
 
 .go-stone {
-  width: 24px;
-  height: 24px;
+  width: var(--go-stone-size);
+  height: var(--go-stone-size);
   border-radius: 50%;
   position: relative;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
@@ -2049,6 +2033,10 @@ input {
     min-width: 0;
   }
 
+  .snake-touch-controls {
+    display: grid;
+  }
+
   .chess-board {
     grid-template-columns: repeat(8, 48px);
     grid-auto-rows: 48px;
@@ -2092,18 +2080,9 @@ input {
   }
 
   .gomoku-board {
-    grid-template-columns: repeat(15, 26px);
-    grid-auto-rows: 26px;
-  }
-
-  .gomoku-cell {
-    width: 26px;
-    height: 26px;
-  }
-
-  .gomoku-stone {
-    width: 18px;
-    height: 18px;
+    --gomoku-gap: 26px;
+    --gomoku-padding: 13px;
+    --gomoku-stone-size: 18px;
   }
 
   .reversi-board {
@@ -2154,24 +2133,19 @@ input {
   }
 
   .go-board {
-    grid-template-columns: repeat(19, 22px);
-    grid-auto-rows: 22px;
-    padding: 10px;
+    --go-gap: 22px;
+    --go-padding: 11px;
+    --go-stone-size: 18px;
   }
 
-  .go-cell {
-    width: 22px;
-    height: 22px;
-  }
-
-  .go-stone {
-    width: 18px;
-    height: 18px;
-  }
-
-  .go-cell.star-point::before {
+  .go-point.star-point::before {
     width: 4px;
     height: 4px;
+  }
+
+  .gomoku-point.star-point::before {
+    width: 5px;
+    height: 5px;
   }
 }
 
@@ -2226,6 +2200,10 @@ input {
     grid-template-columns: 1fr;
   }
 
+  .snake-touch-middle {
+    grid-template-columns: 1fr;
+  }
+
   .pacman-touch-middle {
     grid-template-columns: 1fr;
   }
@@ -2256,18 +2234,9 @@ input {
   }
 
   .gomoku-board {
-    grid-template-columns: repeat(15, 22px);
-    grid-auto-rows: 22px;
-  }
-
-  .gomoku-cell {
-    width: 22px;
-    height: 22px;
-  }
-
-  .gomoku-stone {
-    width: 16px;
-    height: 16px;
+    --gomoku-gap: 22px;
+    --gomoku-padding: 11px;
+    --gomoku-stone-size: 16px;
   }
 
   .reversi-board {
@@ -2314,18 +2283,21 @@ input {
   }
 
   .go-board {
-    grid-template-columns: repeat(19, 18px);
-    grid-auto-rows: 18px;
-    padding: 8px;
+    --go-gap: 18px;
+    --go-padding: 9px;
+    --go-stone-size: 14px;
   }
 
-  .go-cell {
-    width: 18px;
-    height: 18px;
-  }
-
-  .go-stone {
-    width: 14px;
-    height: 14px;
+  .gomoku-point.star-point::before {
+    width: 4px;
+    height: 4px;
   }
 }
+
+:root[data-theme="dark"] .cell,
+:root[data-theme="dark"] .cell.revealed,
+:root[data-theme="dark"] .cell.revealed.empty,
+:root[data-theme="dark"] .cell.mine {
+  color: #1f2937;
+}
+

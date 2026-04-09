@@ -6,6 +6,7 @@ export function createReversiGame({
   boardElement,
   btnPvp,
   btnCpu,
+  btnAssist,
   btnRestart,
   message,
   turnText,
@@ -32,6 +33,7 @@ export function createReversiGame({
   let animatedFlipKeys = new Set();
   let flipAnimationTimeoutId = null;
   let inputLocked = false;
+  let showHints = true;
 
   boardElement.tabIndex = 0;
 
@@ -85,6 +87,7 @@ export function createReversiGame({
   function updateModeButtons() {
     btnPvp.classList.toggle("active", mode === "pvp");
     btnCpu.classList.toggle("active", mode === "cpu");
+    btnAssist.classList.toggle("active", showHints);
   }
 
   function countPieces(player) {
@@ -265,7 +268,7 @@ export function createReversiGame({
         cell.dataset.row = String(row);
         cell.dataset.col = String(col);
 
-        if (validSet.has(cellKey)) {
+        if (showHints && validSet.has(cellKey)) {
           cell.classList.add("valid");
         }
 
@@ -355,6 +358,13 @@ export function createReversiGame({
     event.currentTarget.blur();
     mode = "cpu";
     startGame();
+  });
+  btnAssist.addEventListener("click", function (event) {
+    event.currentTarget.blur();
+    showHints = !showHints;
+    render();
+    renderMessage();
+    boardElement.focus({ preventScroll: true });
   });
   btnRestart.addEventListener("click", function (event) {
     event.currentTarget.blur();
