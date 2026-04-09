@@ -100,9 +100,16 @@ const translations = {
     "1a2b.message.invalid": "請輸入 4 個不重複的數字。",
     "1a2b.message.win": "恭喜答對！你用了 {count} 次猜中答案 {answer}。",
     "snake.title": "貪食蛇",
-    "snake.message.start": "按方向鍵控制移動，吃到食物就會變長。",
+    "snake.message.start": "按空白鍵開始，方向鍵控制移動。",
+    "snake.message.running": "方向鍵控制移動，空白鍵可以暫停。",
+    "snake.message.paused": "已暫停，按空白鍵繼續。",
     "snake.message.gameOver": "遊戲結束，最終分數：{score}",
     "snake.message.win": "恭喜獲勝，你填滿了整個棋盤！分數：{score}",
+    "snake.overlay.startLine1": "PRESS",
+    "snake.overlay.startLine2": "TO START",
+    "snake.overlay.paused": "PAUSED",
+    "snake.overlay.resume": "TO RESUME",
+    "snake.overlay.moveHint": "TO MOVE",
     "minesweeper.title": "踩地雷",
     "minesweeper.message.start": "左鍵翻開格子，右鍵插旗。",
     "minesweeper.message.hitMine": "你踩到地雷了！",
@@ -348,9 +355,16 @@ const translations = {
     "1a2b.message.invalid": "Please enter 4 different digits.",
     "1a2b.message.win": "You got it! It took {count} guesses to find {answer}.",
     "snake.title": "Snake",
-    "snake.message.start": "Use the arrow keys to move. Eating food makes you longer.",
+    "snake.message.start": "Press Space to start, then use the arrow keys to move.",
+    "snake.message.running": "Use the arrow keys to move. Press Space to pause.",
+    "snake.message.paused": "Paused. Press Space to continue.",
     "snake.message.gameOver": "Game over. Final score: {score}",
     "snake.message.win": "You win! You filled the whole board. Score: {score}",
+    "snake.overlay.startLine1": "PRESS",
+    "snake.overlay.startLine2": "TO START",
+    "snake.overlay.paused": "PAUSED",
+    "snake.overlay.resume": "TO RESUME",
+    "snake.overlay.moveHint": "TO MOVE",
     "minesweeper.title": "Minesweeper",
     "minesweeper.message.start": "Left click to reveal cells, right click to place flags.",
     "minesweeper.message.hitMine": "You hit a mine!",
@@ -500,6 +514,72 @@ const translations = {
     "go.message.finished": "This match is already over. Please restart."
   }
 };
+
+Object.assign(translations.zh, {
+  "menu.memory.title": "記憶遊戲",
+  "menu.memory.meta": "翻牌配對與連消加分",
+  "sudoku.hints": "提示：",
+  "sudoku.hintButton": "提示 ({count})",
+  "memory.title": "記憶遊戲",
+  "memory.deckTheme": "牌組樣式",
+  "memory.theme.playing": "撲克牌",
+  "memory.theme.tarot": "塔羅牌",
+  "memory.theme.fruit": "水果牌",
+  "memory.time": "時間：",
+  "memory.streak": "連消：",
+  "memory.message.ready": "按空白鍵開始預覽，倒數結束後翻牌配對。",
+  "memory.message.preview": "記牌倒數 {count} 秒。",
+  "memory.message.playing": "翻開兩張相同的牌來消除，連續配對會有加分。",
+  "memory.message.match": "配對成功，連消 {streak}，額外加分 {bonus}！",
+  "memory.message.mismatch": "沒有配對成功，請再試一次。",
+  "memory.message.finished": "全部配對完成！耗時 {time}，總分 {score}。"
+});
+
+Object.assign(translations.en, {
+  "menu.memory.title": "Memory Match",
+  "menu.memory.meta": "Flip pairs, combos, and timed scoring",
+  "sudoku.hints": "Hints: ",
+  "sudoku.hintButton": "Hint ({count})",
+  "memory.title": "Memory Match",
+  "memory.deckTheme": "Deck Theme",
+  "memory.theme.playing": "Playing Cards",
+  "memory.theme.tarot": "Tarot Cards",
+  "memory.theme.fruit": "Fruit Cards",
+  "memory.time": "Time: ",
+  "memory.streak": "Combo: ",
+  "memory.message.ready": "Press Space to preview the cards, then start matching pairs.",
+  "memory.message.preview": "Memorize the cards. {count} seconds left.",
+  "memory.message.playing": "Flip two matching cards. Consecutive matches earn combo bonuses.",
+  "memory.message.match": "Match! Combo {streak}, bonus +{bonus}.",
+  "memory.message.mismatch": "Not a match. Try another pair.",
+  "memory.message.finished": "Board cleared in {time}. Final score: {score}."
+});
+
+Object.assign(translations.zh, {
+  "menu.connectfour.title": "四子棋",
+  "menu.connectfour.meta": "紅黃雙方直落連四對戰",
+  "players.yellowSide": "黃方",
+  "connectfour.title": "四子棋",
+  "connectfour.message.start": "紅方先手，點擊任一欄位落子。",
+  "connectfour.message.cpuUnavailable": "與電腦對戰尚未開放，請先使用與玩家對戰模式。",
+  "connectfour.message.columnFull": "這一欄已滿，請選擇其他欄位。",
+  "connectfour.message.win": "{player}獲勝！",
+  "connectfour.message.draw": "平手，棋盤已經滿了。",
+  "connectfour.message.turn": "輪到{player}落子。"
+});
+
+Object.assign(translations.en, {
+  "menu.connectfour.title": "Connect Four",
+  "menu.connectfour.meta": "Red and yellow vertical drop duel",
+  "players.yellowSide": "Yellow",
+  "connectfour.title": "Connect Four",
+  "connectfour.message.start": "Red goes first. Click any column to drop a disc.",
+  "connectfour.message.cpuUnavailable": "Computer mode is not available yet. Please use player-vs-player for now.",
+  "connectfour.message.columnFull": "That column is full. Choose another one.",
+  "connectfour.message.win": "{player} wins!",
+  "connectfour.message.draw": "Draw. The board is full.",
+  "connectfour.message.turn": "{player}'s turn."
+});
 
 const listeners = new Set();
 

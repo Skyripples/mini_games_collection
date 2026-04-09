@@ -3,6 +3,7 @@ import { t } from "../core/i18n.js";
 const BOARD_SIZE = 9;
 const CELL_COUNT = BOARD_SIZE * BOARD_SIZE;
 const MAX_MISTAKES = 3;
+const MAX_HINTS = 3;
 
 const DIFFICULTY_SETTINGS = {
   easy: {
@@ -301,9 +302,11 @@ export function createSudokuGame({
   numberPadElement,
   difficultySelect,
   difficultyLabel,
+  btnHint,
   btnNoteMode,
   btnNewPuzzle,
   btnRestart,
+  hintsText,
   mistakesText,
   message
 }) {
@@ -316,6 +319,7 @@ export function createSudokuGame({
   let currentDifficulty = "normal";
   let noteMode = false;
   let mistakes = 0;
+  let hintsRemaining = MAX_HINTS;
   let gameOver = false;
   let messageState = { type: "generated" };
   let confirmedEntries = new Set();
@@ -343,6 +347,25 @@ export function createSudokuGame({
 
   function updateMistakesText() {
     mistakesText.textContent = `${mistakes} / ${MAX_MISTAKES}`;
+  }
+
+  function getHintCandidates() {
+    return currentBoard
+      .map(function (value, index) {
+        return value === 0 && !isFixed(index) ? index : -1;
+      })
+      .filter(function (index) {
+        return index !== -1;
+      });
+  }
+
+  function updateHintsText() {
+    hintsText.textContent = `${hintsRemaining} / ${MAX_HINTS}`;
+  }
+
+  function updateHintButton() {
+    btnHint.textContent = t("sudoku.hintButton", { count: hintsRemaining });
+    btnHint.disabled = hintsRemaining === 0 || gameOver || getHintCandidates().length === 0;
   }
 
   function updateNoteModeButton() {
@@ -498,6 +521,8 @@ export function createSudokuGame({
     boardElement.appendChild(fragment);
     difficultyLabel.textContent = getDifficultyLabel();
     updateMistakesText();
+    updateHintsText();
+    updateHintButton();
     updateNoteModeButton();
   }
 
@@ -521,6 +546,7 @@ export function createSudokuGame({
     confirmedEntries = new Set();
     wrongEntries = new Set();
     mistakes = 0;
+    hintsRemaining = MAX_HINTS;
     noteMode = false;
     gameOver = false;
     selectFirstEmptyCell();
@@ -541,6 +567,7 @@ export function createSudokuGame({
     confirmedEntries = new Set();
     wrongEntries = new Set();
     mistakes = 0;
+    hintsRemaining = MAX_HINTS;
     noteMode = false;
     gameOver = false;
     selectFirstEmptyCell();
@@ -553,6 +580,31 @@ export function createSudokuGame({
     noteMode = !noteMode;
     render();
     boardElement.focus({ preventScroll: true });
+  }
+
+  function useHint() {
+    if (gameOver || hintsRemaining === 0) {
+      return;
+    }
+
+    const candidates = getHintCandidates();
+    if (candidates.length === 0) {
+      return;
+    }
+
+    const hintedIndex = candidates[Math.floor(Math.random() * candidates.length)];
+    currentBoard[hintedIndex] = solutionBoard[hintedIndex];
+    notes[hintedIndex].clear();
+    wrongEntries.delete(hintedIndex);
+    confirmedEntries.add(hintedIndex);
+    hintsRemaining -= 1;
+
+    if (selectedIndex === hintedIndex && isSolved()) {
+      selectedIndex = null;
+    }
+
+    render();
+    updateMessage();
   }
 
   function handleNoteInput(value) {
@@ -669,6 +721,11 @@ export function createSudokuGame({
   btnNoteMode.addEventListener("click", function (event) {
     event.currentTarget.blur();
     toggleNoteMode();
+  });
+  btnHint.addEventListener("click", function (event) {
+    event.currentTarget.blur();
+    useHint();
+    boardElement.focus({ preventScroll: true });
   });
   btnNewPuzzle.addEventListener("click", function (event) {
     event.currentTarget.blur();

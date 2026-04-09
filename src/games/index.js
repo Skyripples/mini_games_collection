@@ -3,9 +3,11 @@ import { createGame1A2B } from "./game-1a2b.js";
 import { createGame2048 } from "./game-2048.js";
 import { createBreakoutGame } from "./game-breakout.js";
 import { createChessGame } from "./game-chess.js";
+import { createConnectFourGame } from "./game-connectfour.js";
 import { createDinoGame } from "./game-dino.js";
 import { createGoGame } from "./game-go.js";
 import { createGomokuGame } from "./game-gomoku.js";
+import { createMemoryGame } from "./game-memory.js";
 import { createMinesweeperGame } from "./game-minesweeper.js";
 import { createPacmanGame } from "./game-pacman.js";
 import { createPinballGame } from "./game-pinball.js";
@@ -135,6 +137,26 @@ export const gameRegistry = [
       difficultyLabel: "minesweeper-difficulty-label",
       sizeText: "minesweeper-size",
       mineText: "minesweeper-mines"
+    })
+  }),
+  createRegistryEntry({
+    id: "memory",
+    buttonId: "btn-memory",
+    panelId: "game-memory",
+    order: 6,
+    level: 2,
+    titleKey: "menu.memory.title",
+    metaKey: "menu.memory.meta",
+    thumbClass: "thumb--memory",
+    createGame: createGameFactory(createMemoryGame, {
+      boardElement: "memory-board",
+      difficultySelect: "select-memory-difficulty",
+      themeSelect: "select-memory-theme",
+      btnRestart: "btn-restart-memory",
+      timeText: "memory-time",
+      scoreText: "memory-score",
+      streakText: "memory-streak",
+      message: "memory-message"
     })
   }),
   createRegistryEntry({
@@ -282,6 +304,24 @@ export const gameRegistry = [
     )
   }),
   createRegistryEntry({
+    id: "connectfour",
+    buttonId: "btn-connectfour",
+    panelId: "game-connectfour",
+    order: 8.5,
+    level: 3,
+    titleKey: "menu.connectfour.title",
+    metaKey: "menu.connectfour.meta",
+    thumbClass: "thumb--connectfour",
+    createGame: createGameFactory(createConnectFourGame, {
+      boardElement: "connectfour-board",
+      btnPvp: "btn-connectfour-pvp",
+      btnCpu: "btn-connectfour-cpu",
+      btnRestart: "btn-restart-connectfour",
+      turnText: "connectfour-turn",
+      message: "connectfour-message"
+    })
+  }),
+  createRegistryEntry({
     id: "tictactoe",
     buttonId: "btn-tictactoe",
     panelId: "game-tictactoe",
@@ -381,9 +421,11 @@ export const gameRegistry = [
       numberPadElement: "sudoku-number-pad",
       difficultySelect: "select-sudoku-difficulty",
       difficultyLabel: "sudoku-difficulty-label",
+      btnHint: "btn-hint-sudoku",
       btnNoteMode: "btn-sudoku-note",
       btnNewPuzzle: "btn-new-sudoku",
       btnRestart: "btn-restart-sudoku",
+      hintsText: "sudoku-hints",
       mistakesText: "sudoku-mistakes",
       message: "sudoku-message"
     })

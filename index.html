@@ -75,12 +75,12 @@
       <div id="game-snake" class="game-panel hidden">
         <h2 data-i18n="snake.title">鞎芷???</h2>
         <div class="input-row">
-          <button id="btn-start-snake" data-i18n="common.startRestart">?? / ???</button>
+          <button id="btn-start-snake" data-i18n="common.restart">???</button>
         </div>
         <p><span data-i18n="common.score">?嚗?</span><span id="snake-score">0</span></p>
         <p id="snake-message">???批蝘餃?嚗??圈??拙停???瑯?</p>
         <div class="snake-layout">
-          <canvas id="snake-canvas" width="400" height="400"></canvas>
+          <canvas id="snake-canvas" width="600" height="600"></canvas>
           <div class="snake-touch-controls">
             <button id="btn-snake-up" data-i18n="pacman.up">銝?</button>
             <div class="snake-touch-middle">
@@ -252,6 +252,22 @@
         </div>
       </div>
 
+      <div id="game-connectfour" class="game-panel hidden">
+        <h2 data-i18n="connectfour.title">四子棋</h2>
+        <div class="input-row">
+          <button id="btn-connectfour-pvp" class="mode-button" data-i18n="common.playerVsPlayer">與玩家對戰</button>
+          <button id="btn-connectfour-cpu" class="mode-button" data-i18n="common.playerVsComputer">與電腦對戰</button>
+          <button id="btn-restart-connectfour" data-i18n="common.restart">重新開始</button>
+        </div>
+        <p class="game-stats">
+          <span data-i18n="common.turn">目前回合：</span><span id="connectfour-turn">紅方</span>
+        </p>
+        <p id="connectfour-message">紅方先手，點擊任一欄位落子。</p>
+        <div class="board-scroll">
+          <div id="connectfour-board" class="connectfour-board"></div>
+        </div>
+      </div>
+
       <div id="game-tetris" class="game-panel hidden">
         <h2 data-i18n="tetris.title">靽??舀憛?</h2>
         <div class="input-row">
@@ -327,11 +343,14 @@
             <option value="hard" data-i18n="common.hard">?圈</option>
           </select>
           <button id="btn-new-sudoku" data-i18n="common.newPuzzle">?圈???</button>
+          <button id="btn-hint-sudoku" class="mode-button">提示 (3)</button>
           <button id="btn-sudoku-note" class="mode-button" data-i18n="sudoku.noteModeOff">蝑?璅∪?嚗?</button>
           <button id="btn-restart-sudoku" data-i18n="common.restart">???</button>
         </div>
         <p class="game-stats">
           <span data-i18n="common.currentDifficulty">?桀???漲嚗?</span><span id="sudoku-difficulty-label">?桅?</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="sudoku.hints">提示：</span><span id="sudoku-hints">3 / 3</span>
           <span class="stats-separator">|</span>
           <span data-i18n="common.mistakes">?航炊甈⊥嚗?</span><span id="sudoku-mistakes">0 / 3</span>
         </p>
@@ -340,6 +359,36 @@
           <div id="sudoku-board" class="sudoku-board"></div>
         </div>
         <div id="sudoku-number-pad" class="sudoku-number-pad"></div>
+      </div>
+
+      <div id="game-memory" class="game-panel hidden">
+        <h2 data-i18n="memory.title">記憶遊戲</h2>
+        <div class="input-row">
+          <label for="select-memory-difficulty" data-i18n="common.difficulty">難度</label>
+          <select id="select-memory-difficulty">
+            <option value="easy" data-i18n="common.easy">簡單</option>
+            <option value="normal" data-i18n="common.normal">普通</option>
+            <option value="hard" data-i18n="common.hard">困難</option>
+          </select>
+          <label for="select-memory-theme" data-i18n="memory.deckTheme">牌組樣式</label>
+          <select id="select-memory-theme">
+            <option value="playing" data-i18n="memory.theme.playing">撲克牌</option>
+            <option value="tarot" data-i18n="memory.theme.tarot">塔羅牌</option>
+            <option value="fruit" data-i18n="memory.theme.fruit">水果牌</option>
+          </select>
+          <button id="btn-restart-memory" data-i18n="common.restart">重新開始</button>
+        </div>
+        <p class="game-stats">
+          <span data-i18n="memory.time">時間：</span><span id="memory-time">00:00.0</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="common.score">分數：</span><span id="memory-score">0</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="memory.streak">連消：</span><span id="memory-streak">0</span>
+        </p>
+        <p id="memory-message">按空白鍵開始預覽，倒數結束後翻牌配對。</p>
+        <div class="board-scroll">
+          <div id="memory-board" class="memory-board"></div>
+        </div>
       </div>
 
       <div id="game-xiangqi" class="game-panel hidden">

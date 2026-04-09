@@ -1,12 +1,12 @@
 # 小遊戲合集
 
-使用 `HTML`、`CSS` 和 `JavaScript` 製作的瀏覽器小遊戲集合，並部署於 GitHub Pages。
+使用 `HTML`、`CSS` 與原生 `JavaScript` 製作的小遊戲網站，部署於 GitHub Pages。
 
-## 線上遊玩
+## 網站
 
 https://skyripples.github.io/mini_games_collection/
 
-## 目前收錄遊戲
+## 目前可遊玩的小遊戲
 
 - 猜數字
 - 井字棋
@@ -15,6 +15,8 @@ https://skyripples.github.io/mini_games_collection/
 - 打磚塊
 - 踩地雷
 - 數獨
+- 記憶遊戲
+- 四子棋
 - 五子棋
 - 黑白棋
 - 俄羅斯方塊
@@ -25,24 +27,25 @@ https://skyripples.github.io/mini_games_collection/
 ## 專案結構
 
 - `index.html`：主頁面與各遊戲面板
-- `style.css`：共用樣式、首頁卡片與各遊戲版面
-- `src/main.js`：統一入口，初始化註冊表並管理畫面切換
-- `src/games/index.js`：遊戲註冊表，集中管理 `id`、按鈕、面板與建立函式
+- `style.css`：整體版型與各遊戲樣式
+- `src/main.js`：統一入口與初始化流程
+- `src/games/index.js`：遊戲註冊表，集中管理遊戲 `id`、按鈕、面板與建立函式
 - `src/games/`：各遊戲模組
-- `src/core/`：共用入口、語系與主題切換
-- `scripts/validate_site.py`：基本結構與 JavaScript 驗證腳本
+- `src/core/`：共用的入口管理、語言切換與主題切換
+- `scripts/validate_site.py`：本機靜態驗證腳本
 
-## 本機預覽
+## 本機啟動
 
 ```bash
 python -m http.server 8000
 ```
 
-然後開啟 `http://localhost:8000/`。
+開啟 `http://localhost:8000/` 即可。
 
 ## 版本
 
-- `V3.1`：集中修正棋盤座標系、踩地雷深色模式可讀性、旗子標示與多項介面除錯，並暫時隱藏部分高複雜度遊戲進行細部調整。
-- `V3.0`：完成統一入口、首頁註冊表驅動、主選單卡片動態生成、多語系與深色模式整合。
-- `V2.0`：新增大量遊戲模組，擴充整體遊戲庫與行動版適配。
-- `V1.0`：專案初版上線。
+- `V4.0`：新增記憶遊戲與四子棋，補上四子棋落子動畫，強化貪食蛇事件、道具與開始/暫停流程，數獨加入提示功能。
+- `V3.1`：以除錯與規則修正為主，並暫時關閉部分系統較複雜、仍在細部調整的遊戲。
+- `V3.0`：完成統一入口與註冊表架構，整理主選單、語言設定、深色模式與多款遊戲內容。
+- `V2.0`：擴充多款棋類與益智遊戲，整體專案規模大幅增加。
+- `V1.0`：專案初版。
