@@ -2,21 +2,30 @@ import { t } from "../core/i18n.js";
 import { createGame1A2B } from "./game-1a2b.js";
 import { createGame2048 } from "./game-2048.js";
 import { createBreakoutGame } from "./game-breakout.js";
+import { createCashForgeGame } from "./game-cashforge.js";
+import { createCheckersGame } from "./game-checkers.js";
 import { createChessGame } from "./game-chess.js";
 import { createConnectFourGame } from "./game-connectfour.js";
 import { createDinoGame } from "./game-dino.js";
 import { createGoGame } from "./game-go.js";
 import { createGomokuGame } from "./game-gomoku.js";
+import { createHuarongdaoGame } from "./game-huarongdao.js";
 import { createMemoryGame } from "./game-memory.js";
 import { createMinesweeperGame } from "./game-minesweeper.js";
 import { createPacmanGame } from "./game-pacman.js";
 import { createPinballGame } from "./game-pinball.js";
+import { createRaidenGame } from "./game-raiden.js";
 import { createReversiGame } from "./game-reversi.js";
+import { createSlidePuzzleGame } from "./game-slide-puzzle.js";
 import { createSnakeGame } from "./game-snake.js";
+import { createSokobanGame } from "./game-sokoban.js";
 import { createSudokuGame } from "./game-sudoku.js";
 import { createTicTacToeGame } from "./game-tic-tac-toe.js";
 import { createTetrisGame } from "./game-tetris.js";
+import { createWhackAMoleGame } from "./game-whack-a-mole.js";
+import { createShogiGame } from "./game-shogi.js";
 import { createXiangqiGame } from "./game-xiangqi.js";
+import { createWaterSortGame } from "./game-water-sort.js";
 
 function buildElements(getElementById, elementIds) {
   return Object.fromEntries(
@@ -101,6 +110,51 @@ export const gameRegistry = [
     })
   }),
   createRegistryEntry({
+    id: "cashforge",
+    buttonId: "btn-cashforge",
+    panelId: "game-cashforge",
+    hidden: true,
+    order: 18,
+    level: 3,
+    titleKey: "menu.cashForge.title",
+    metaKey: "menu.cashForge.meta",
+    thumbClass: "thumb--cashforge",
+    createGame: createGameFactory(createCashForgeGame, {
+      btnRecharge: "btn-cashforge-recharge",
+      btnReset: "btn-cashforge-reset",
+      btnTabInventory: "btn-cashforge-tab-inventory",
+      btnTabShop: "btn-cashforge-tab-shop",
+      btnTabEnhance: "btn-cashforge-tab-enhance",
+      viewInventory: "cashforge-view-inventory",
+      viewShop: "cashforge-view-shop",
+      viewEnhance: "cashforge-view-enhance",
+      coinsGlobal: "cashforge-coins-global",
+      bagEquipment: "cashforge-bag-equipment",
+      bagRestoreScrolls: "cashforge-bag-restore-scrolls",
+      bagGuardianStones: "cashforge-bag-guardian-stones",
+      bagGuardianCrystals: "cashforge-bag-guardian-crystals",
+      bagDoubleHammers: "cashforge-bag-double-hammers",
+      shopCoins: "cashforge-shop-coins",
+      btnBuyRestorePack: "btn-buy-restore-pack",
+      btnBuyStonePack: "btn-buy-stone-pack",
+      btnBuyCrystalPack: "btn-buy-crystal-pack",
+      equipmentSelect: "cashforge-equipment-select",
+      btnEnhance: "btn-cashforge-enhance",
+      btnRestore: "btn-cashforge-restore",
+      useStoneCheckbox: "cashforge-use-stone",
+      useCrystalCheckbox: "cashforge-use-crystal",
+      useHammerCheckbox: "cashforge-use-hammer",
+      enhanceCoins: "cashforge-enhance-coins",
+      enhanceLevel: "cashforge-enhance-level",
+      enhanceRestoreScrolls: "cashforge-enhance-restore-scrolls",
+      enhanceGuardianStones: "cashforge-enhance-guardian-stones",
+      enhanceGuardianCrystals: "cashforge-enhance-guardian-crystals",
+      enhanceDoubleHammers: "cashforge-enhance-double-hammers",
+      message: "cashforge-message",
+      equipmentStatusList: "cashforge-equipment-status-list"
+    })
+  }),
+  createRegistryEntry({
     id: "snake",
     buttonId: "btn-snake",
     panelId: "game-snake",
@@ -124,7 +178,7 @@ export const gameRegistry = [
     id: "minesweeper",
     buttonId: "btn-minesweeper",
     panelId: "game-minesweeper",
-    order: 7,
+    order: 11,
     level: 3,
     titleKey: "menu.minesweeper.title",
     metaKey: "menu.minesweeper.meta",
@@ -143,7 +197,7 @@ export const gameRegistry = [
     id: "memory",
     buttonId: "btn-memory",
     panelId: "game-memory",
-    order: 6,
+    order: 8,
     level: 2,
     titleKey: "menu.memory.title",
     metaKey: "menu.memory.meta",
@@ -163,7 +217,7 @@ export const gameRegistry = [
     id: "2048",
     buttonId: "btn-2048",
     panelId: "game-2048",
-    order: 4,
+    order: 6,
     level: 2,
     titleKey: "menu.2048.title",
     metaKey: "menu.2048.meta",
@@ -186,7 +240,7 @@ export const gameRegistry = [
     id: "breakout",
     buttonId: "btn-breakout",
     panelId: "game-breakout",
-    order: 5,
+    order: 7,
     level: 2,
     titleKey: "menu.breakout.title",
     metaKey: "menu.breakout.meta",
@@ -200,11 +254,49 @@ export const gameRegistry = [
     })
   }),
   createRegistryEntry({
+    id: "raiden",
+    buttonId: "btn-raiden",
+    panelId: "game-raiden",
+    order: 17,
+    level: 3,
+    titleKey: "menu.raiden.title",
+    metaKey: "menu.raiden.meta",
+    thumbClass: "thumb--raiden",
+    createGame: createGameFactory(createRaidenGame, {
+      canvas: "raiden-canvas",
+      btnRestart: "btn-restart-raiden",
+      scoreText: "raiden-score",
+      hpText: "raiden-hp",
+      skillText: "raiden-skill",
+      message: "raiden-message"
+    })
+  }),
+  createRegistryEntry({
+    id: "whack",
+    buttonId: "btn-whack",
+    panelId: "game-whack",
+    order: 5,
+    level: 2,
+    titleKey: "menu.whack.title",
+    metaKey: "menu.whack.meta",
+    thumbClass: "thumb--whack",
+    createGame: createGameFactory(createWhackAMoleGame, {
+      boardElement: "whack-board",
+      difficultySelect: "select-whack-difficulty",
+      difficultyLabel: "whack-difficulty-label",
+      btnStart: "btn-start-whack",
+      btnRestart: "btn-restart-whack",
+      scoreText: "whack-score",
+      timeText: "whack-time",
+      message: "whack-message"
+    })
+  }),
+  createRegistryEntry({
     id: "pinball",
     buttonId: "btn-pinball",
     panelId: "game-pinball",
     hidden: true,
-    order: 12,
+    order: 21,
     level: 4,
     titleKey: "menu.pinball.title",
     metaKey: "menu.pinball.meta",
@@ -232,7 +324,7 @@ export const gameRegistry = [
     buttonId: "btn-dino",
     panelId: "game-dino",
     hidden: true,
-    order: 6,
+    order: 4,
     level: 2,
     titleKey: "menu.dino.title",
     metaKey: "menu.dino.meta",
@@ -259,7 +351,7 @@ export const gameRegistry = [
     buttonId: "btn-pacman",
     panelId: "game-pacman",
     hidden: true,
-    order: 13,
+    order: 22,
     level: 4,
     titleKey: "menu.pacman.title",
     metaKey: "menu.pacman.meta",
@@ -284,10 +376,28 @@ export const gameRegistry = [
     )
   }),
   createRegistryEntry({
+    id: "checkers",
+    buttonId: "btn-checkers",
+    panelId: "game-checkers",
+    order: 22.6,
+    level: 4,
+    titleKey: "menu.checkers.title",
+    metaKey: "menu.checkers.meta",
+    thumbClass: "thumb--checkers",
+    createGame: createGameFactory(createCheckersGame, {
+      boardElement: "checkers-board",
+      playerCountSelect: "select-checkers-player-count",
+      btnRestart: "btn-restart-checkers",
+      turnText: "checkers-turn",
+      playersText: "checkers-players",
+      message: "checkers-message"
+    })
+  }),
+  createRegistryEntry({
     id: "chess",
     buttonId: "btn-chess",
     panelId: "game-chess",
-    order: 14,
+    order: 23,
     level: 5,
     titleKey: "menu.chess.title",
     metaKey: "menu.chess.meta",
@@ -307,7 +417,7 @@ export const gameRegistry = [
     id: "connectfour",
     buttonId: "btn-connectfour",
     panelId: "game-connectfour",
-    order: 8.5,
+    order: 10,
     level: 3,
     titleKey: "menu.connectfour.title",
     metaKey: "menu.connectfour.meta",
@@ -345,34 +455,27 @@ export const gameRegistry = [
     id: "tetris",
     buttonId: "btn-tetris",
     panelId: "game-tetris",
-    order: 11,
+    order: 20,
     level: 4,
     titleKey: "menu.tetris.title",
     metaKey: "menu.tetris.meta",
     thumbClass: "thumb--tetris",
-    createGame: createGameFactory(
-      createTetrisGame,
-      {
-        canvas: "tetris-canvas",
-        holdCanvas: "tetris-hold-canvas",
-        nextCanvas: "tetris-next-canvas",
-        btnRestart: "btn-restart-tetris",
-        scoreText: "tetris-score",
-        linesText: "tetris-lines",
-        levelText: "tetris-level",
-        message: "tetris-message"
-      },
-      {
-        messageId: "tetris-message",
-        messageKey: "tetris.message.start"
-      }
-    )
+    createGame: createGameFactory(createTetrisGame, {
+      canvas: "tetris-canvas",
+      holdCanvas: "tetris-hold-canvas",
+      nextCanvas: "tetris-next-canvas",
+      btnRestart: "btn-restart-tetris",
+      scoreText: "tetris-score",
+      linesText: "tetris-lines",
+      levelText: "tetris-level",
+      message: "tetris-message"
+    })
   }),
   createRegistryEntry({
     id: "gomoku",
     buttonId: "btn-gomoku",
     panelId: "game-gomoku",
-    order: 9,
+    order: 13,
     level: 3,
     titleKey: "menu.gomoku.title",
     metaKey: "menu.gomoku.meta",
@@ -387,10 +490,47 @@ export const gameRegistry = [
     })
   }),
   createRegistryEntry({
+    id: "sokoban",
+    buttonId: "btn-sokoban",
+    panelId: "game-sokoban",
+    order: 15,
+    level: 3,
+    titleKey: "menu.sokoban.title",
+    metaKey: "menu.sokoban.meta",
+    thumbClass: "thumb--sokoban",
+    createGame: createGameFactory(createSokobanGame, {
+      boardElement: "sokoban-board",
+      btnPrev: "btn-prev-sokoban",
+      btnRestart: "btn-restart-sokoban",
+      btnNext: "btn-next-sokoban",
+      levelText: "sokoban-level",
+      movesText: "sokoban-moves",
+      message: "sokoban-message"
+    })
+  }),
+  createRegistryEntry({
+    id: "huarongdao",
+    buttonId: "btn-huarongdao",
+    panelId: "game-huarongdao",
+    order: 16,
+    level: 3,
+    titleKey: "menu.huarongdao.title",
+    metaKey: "menu.huarongdao.meta",
+    thumbClass: "thumb--huarongdao",
+    createGame: createGameFactory(createHuarongdaoGame, {
+      boardElement: "huarongdao-board",
+      difficultySelect: "select-huarongdao-difficulty",
+      difficultyLabel: "huarongdao-difficulty-label",
+      btnRestart: "btn-restart-huarongdao",
+      movesText: "huarongdao-moves",
+      message: "huarongdao-message"
+    })
+  }),
+  createRegistryEntry({
     id: "reversi",
     buttonId: "btn-reversi",
     panelId: "game-reversi",
-    order: 10,
+    order: 19,
     level: 4,
     titleKey: "menu.reversi.title",
     metaKey: "menu.reversi.meta",
@@ -411,7 +551,7 @@ export const gameRegistry = [
     id: "sudoku",
     buttonId: "btn-sudoku",
     panelId: "game-sudoku",
-    order: 8,
+    order: 14,
     level: 3,
     titleKey: "menu.sudoku.title",
     metaKey: "menu.sudoku.meta",
@@ -431,10 +571,28 @@ export const gameRegistry = [
     })
   }),
   createRegistryEntry({
+    id: "slide",
+    buttonId: "btn-slide",
+    panelId: "game-slide",
+    order: 12,
+    level: 3,
+    titleKey: "menu.slide.title",
+    metaKey: "menu.slide.meta",
+    thumbClass: "thumb--slide",
+    createGame: createGameFactory(createSlidePuzzleGame, {
+      boardElement: "slide-board",
+      difficultySelect: "select-slide-difficulty",
+      btnRestart: "btn-restart-slide",
+      movesText: "slide-moves",
+      timeText: "slide-time",
+      message: "slide-message"
+    })
+  }),
+  createRegistryEntry({
     id: "xiangqi",
     buttonId: "btn-xiangqi",
     panelId: "game-xiangqi",
-    order: 15,
+    order: 24,
     level: 5,
     titleKey: "menu.xiangqi.title",
     metaKey: "menu.xiangqi.meta",
@@ -451,10 +609,33 @@ export const gameRegistry = [
     )
   }),
   createRegistryEntry({
+    id: "shogi",
+    buttonId: "btn-shogi",
+    panelId: "game-shogi",
+    order: 24.5,
+    level: 5,
+    titleKey: "menu.shogi.title",
+    metaKey: "menu.shogi.meta",
+    thumbClass: "thumb--shogi",
+    createGame: createGameFactory(createShogiGame, {
+      boardElement: "shogi-board",
+      blackHandElement: "shogi-black-hand",
+      whiteHandElement: "shogi-white-hand",
+      btnAssist: "btn-assist-shogi",
+      btnRestart: "btn-restart-shogi",
+      turnText: "shogi-turn",
+      message: "shogi-message",
+      promotePrompt: "shogi-promote-prompt",
+      promoteText: "shogi-promote-text",
+      btnPromoteYes: "btn-shogi-promote-yes",
+      btnPromoteNo: "btn-shogi-promote-no"
+    })
+  }),
+  createRegistryEntry({
     id: "go",
     buttonId: "btn-go",
     panelId: "game-go",
-    order: 16,
+    order: 25,
     level: 5,
     titleKey: "menu.go.title",
     metaKey: "menu.go.meta",
@@ -475,5 +656,23 @@ export const gameRegistry = [
         messageKey: "go.message.start"
       }
     )
-  })
+  }),
+  createRegistryEntry({
+    id: "water-sort",
+    buttonId: "btn-water-sort",
+    panelId: "game-water-sort",
+    order: 9,
+    level: 2,
+    titleKey: "menu.waterSort.title",
+    metaKey: "menu.waterSort.meta",
+    thumbClass: "thumb--water-sort",
+    createGame: createGameFactory(createWaterSortGame, {
+      boardElement: "water-sort-board",
+      btnRestart: "btn-restart-water-sort",
+      btnPrev: "btn-prev-water-sort",
+      btnNext: "btn-next-water-sort",
+      levelText: "water-sort-level",
+      message: "water-sort-message"
+    })
+  }),
 ];

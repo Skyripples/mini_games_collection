@@ -351,7 +351,7 @@ export function createXiangqiGame({
   let selected = null;
   let legalMoves = [];
   let gameOver = false;
-  let showHints = true;
+  let showHints = false;
   let messageState = { type: "start" };
 
   boardElement.tabIndex = 0;

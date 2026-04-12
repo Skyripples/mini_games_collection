@@ -28,6 +28,8 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
   let score = 0;
   let lives = 3;
   let running = false;
+  let paused = false;
+  let sessionEnded = false;
   let launched = false;
   let bricks = [];
   let messageKey = "breakout.message.ready";
@@ -129,6 +131,37 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
     rightPressed = false;
   }
 
+  function beginLoop() {
+    if (running) {
+      return;
+    }
+
+    running = true;
+    canvas.focus({ preventScroll: true });
+    animationFrameId = requestAnimationFrame(loop);
+  }
+
+  function pauseGame() {
+    if (!running) {
+      return;
+    }
+
+    stop();
+    paused = true;
+    setMessage("breakout.message.paused");
+    draw();
+  }
+
+  function resumeGame() {
+    if (!paused) {
+      return;
+    }
+
+    paused = false;
+    setMessage(launched ? "breakout.message.launched" : "breakout.message.ready");
+    beginLoop();
+  }
+
   function allBricksCleared() {
     return bricks.every(function (row) {
       return row.every(function (brick) {
@@ -160,6 +193,8 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
 
           if (allBricksCleared()) {
             stop();
+            paused = false;
+            sessionEnded = true;
             setMessage("breakout.message.win", { score });
           }
 
@@ -215,6 +250,8 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
 
       if (lives <= 0) {
         stop();
+        paused = false;
+        sessionEnded = true;
         setMessage("breakout.message.gameOver", { score });
         return;
       }
@@ -234,6 +271,8 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
 
   function start() {
     stop();
+    paused = false;
+    sessionEnded = false;
     score = 0;
     lives = 3;
     createBricks();
@@ -241,13 +280,10 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
     updateStats();
     setMessage("breakout.message.ready");
     draw();
-    running = true;
-    canvas.focus({ preventScroll: true });
-    animationFrameId = requestAnimationFrame(loop);
   }
 
   function launchBall() {
-    if (!running || launched) {
+    if (!running || launched || sessionEnded) {
       return;
     }
 
@@ -255,15 +291,47 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
     setMessage("breakout.message.launched");
   }
 
+  function handleSpaceAction() {
+    if (running) {
+      if (!launched) {
+        launchBall();
+        return;
+      }
+
+      pauseGame();
+      return;
+    }
+
+    if (paused) {
+      resumeGame();
+      return;
+    }
+
+    if (sessionEnded) {
+      start();
+    }
+
+    beginLoop();
+    launchBall();
+  }
+
   function handleKeyDown(event) {
-    if (!arrowKeys.has(event.key)) {
+    const isSpace = event.code === "Space" || event.key === " " || event.key === "Space";
+
+    if (!isSpace && !arrowKeys.has(event.key)) {
       return;
     }
 
     event.preventDefault();
 
-    if (event.key === " " || event.key === "Space") {
-      launchBall();
+    if (isSpace) {
+      if (!event.repeat) {
+        handleSpaceAction();
+      }
+      return;
+    }
+
+    if (!running) {
       return;
     }
 
@@ -293,7 +361,10 @@ export function createBreakoutGame({ canvas, btnStart, scoreText, livesText, mes
 
   return {
     enter: start,
-    leave: stop,
+    leave: function () {
+      stop();
+      paused = false;
+    },
     handleKeyDown,
     handleKeyUp,
     refreshLocale: refreshMessage

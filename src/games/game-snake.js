@@ -394,12 +394,12 @@ export function createSnakeGame({
   }
 
   function drawSkull(centerX, centerY) {
-    drawCircle(centerX, centerY - 1, 7.3, "#0f172a");
-    drawRoundedRect(centerX - 5.5, centerY + 2, 11, 6, 2.5, "#0f172a");
-    drawCircle(centerX - 2.8, centerY - 2, 1.7, "#f8fafc");
-    drawCircle(centerX + 2.8, centerY - 2, 1.7, "#f8fafc");
+    drawCircle(centerX, centerY - 1, 7.3, "#f8fafc");
+    drawRoundedRect(centerX - 5.5, centerY + 2, 11, 6, 2.5, "#f8fafc");
+    drawCircle(centerX - 2.8, centerY - 2, 1.8, "#0f172a");
+    drawCircle(centerX + 2.8, centerY - 2, 1.8, "#0f172a");
 
-    context.fillStyle = "#f8fafc";
+    context.fillStyle = "#0f172a";
     context.beginPath();
     context.moveTo(centerX, centerY + 0.5);
     context.lineTo(centerX - 1.4, centerY + 3.5);
@@ -407,7 +407,7 @@ export function createSnakeGame({
     context.closePath();
     context.fill();
 
-    context.strokeStyle = "#f8fafc";
+    context.strokeStyle = "#0f172a";
     context.lineWidth = 1;
     context.beginPath();
     context.moveTo(centerX - 2.8, centerY + 5.5);
@@ -586,10 +586,10 @@ export function createSnakeGame({
   }
 
   function drawBackground() {
-    context.fillStyle = "#f8fafc";
+    context.fillStyle = "#020617";
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    context.strokeStyle = "rgba(148, 163, 184, 0.16)";
+    context.strokeStyle = "rgba(148, 163, 184, 0.14)";
     context.lineWidth = 1;
     for (let index = 0; index <= tileCount; index += 1) {
       const offset = index * gridSize;
@@ -806,9 +806,7 @@ export function createSnakeGame({
 
     drawFloatingTexts();
 
-    if (gameState === "ready") {
-      drawStartOverlay();
-    } else if (gameState === "paused") {
+    if (gameState === "paused") {
       drawPausedOverlay();
     }
   }

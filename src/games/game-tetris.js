@@ -1,3 +1,5 @@
+import { t } from "../core/i18n.js";
+
 const COLS = 10;
 const ROWS = 20;
 const CELL_SIZE = 32;
@@ -10,8 +12,7 @@ const KEY_SET = new Set([
   "ArrowRight",
   "ArrowUp",
   "ArrowDown",
-  " ",
-  "Space",
+  "Enter",
   "Shift",
   "ShiftLeft",
   "ShiftRight"
@@ -133,6 +134,18 @@ function drawCell(context, x, y, size, fillStyle) {
   context.strokeRect(x + 0.5, y + 0.5, size - 1, size - 1);
 }
 
+function hexToRgba(hexColor, alpha) {
+  const normalized = hexColor.replace("#", "");
+  if (normalized.length !== 6) {
+    return `rgba(148, 163, 184, ${alpha})`;
+  }
+
+  const red = Number.parseInt(normalized.slice(0, 2), 16);
+  const green = Number.parseInt(normalized.slice(2, 4), 16);
+  const blue = Number.parseInt(normalized.slice(4, 6), 16);
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}
+
 export function createTetrisGame({
   canvas,
   holdCanvas,
@@ -157,6 +170,7 @@ export function createTetrisGame({
   let level = 1;
   let timer = null;
   let running = false;
+  let playState = "ready";
   let holdUsed = false;
   let horizontalRepeatTimeoutId = null;
   let horizontalRepeatIntervalId = null;
@@ -227,6 +241,53 @@ export function createTetrisGame({
     }
   }
 
+  function getGhostRow() {
+    if (!currentPiece) {
+      return 0;
+    }
+
+    let dropOffset = 0;
+    while (!collides(currentPiece, dropOffset + 1, 0)) {
+      dropOffset += 1;
+    }
+
+    return currentPiece.row + dropOffset;
+  }
+
+  function drawGhostPiece() {
+    if (!currentPiece) {
+      return;
+    }
+
+    const ghostRow = getGhostRow();
+    if (ghostRow <= currentPiece.row) {
+      return;
+    }
+
+    const fillColor = hexToRgba(currentPiece.color, 0.2);
+    const strokeColor = hexToRgba(currentPiece.color, 0.58);
+
+    currentPiece.matrix.forEach(function (pieceRow, rowOffset) {
+      pieceRow.forEach(function (cell, colOffset) {
+        if (!cell) {
+          return;
+        }
+
+        const drawRow = ghostRow + rowOffset;
+        const drawCol = currentPiece.col + colOffset;
+        if (drawRow < 0) {
+          return;
+        }
+
+        context.fillStyle = fillColor;
+        context.fillRect(drawCol * CELL_SIZE, drawRow * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        context.strokeStyle = strokeColor;
+        context.lineWidth = 1;
+        context.strokeRect(drawCol * CELL_SIZE + 0.5, drawRow * CELL_SIZE + 0.5, CELL_SIZE - 1, CELL_SIZE - 1);
+      });
+    });
+  }
+
   function drawActivePiece() {
     if (!currentPiece) {
       return;
@@ -292,6 +353,7 @@ export function createTetrisGame({
   function render() {
     drawBoardGrid();
     drawPlacedBlocks();
+    drawGhostPiece();
     drawActivePiece();
     drawPreview(holdContext, holdCanvas, holdPiece);
     drawPreview(nextContext, nextCanvas, nextPiece);
@@ -301,6 +363,25 @@ export function createTetrisGame({
     scoreText.textContent = String(score);
     linesText.textContent = String(lines);
     levelText.textContent = String(level);
+  }
+
+  function updateStateMessage() {
+    if (playState === "gameOver") {
+      message.textContent = t("tetris.message.gameOver", { score });
+      return;
+    }
+
+    if (playState === "paused") {
+      message.textContent = t("tetris.message.paused");
+      return;
+    }
+
+    if (playState === "running") {
+      message.textContent = t("tetris.message.running");
+      return;
+    }
+
+    message.textContent = t("tetris.message.start");
   }
 
   function stop() {
@@ -396,7 +477,7 @@ export function createTetrisGame({
     }
 
     updateStats();
-    message.textContent = `消除了 ${cleared} 行，版面整理成功。`;
+    message.textContent = t("tetris.message.cleared", { count: cleared });
   }
 
   function drawFromBag() {
@@ -411,8 +492,9 @@ export function createTetrisGame({
 
   function gameOver() {
     stop();
+    playState = "gameOver";
     render();
-    message.textContent = `遊戲結束，最終分數 ${score}。`;
+    updateStateMessage();
   }
 
   function spawnPiece() {
@@ -562,7 +644,7 @@ export function createTetrisGame({
     lockCurrentPiece();
   }
 
-  function start() {
+  function resetToReady() {
     stop();
     board = createEmptyBoard();
     bag = [];
@@ -573,15 +655,75 @@ export function createTetrisGame({
     holdPiece = null;
     holdUsed = false;
     nextPiece = drawFromBag();
+    playState = "ready";
     updateStats();
-    running = true;
-    message.textContent = "左右移動、上鍵旋轉、下鍵加速、空白鍵直落、Shift 暫存方塊。";
     spawnPiece();
+    updateStateMessage();
     canvas.focus({ preventScroll: true });
+  }
+
+  function startGame() {
+    if (playState === "gameOver") {
+      resetToReady();
+    }
+
+    if (playState === "running") {
+      return;
+    }
+
+    running = true;
+    playState = "running";
+    updateStateMessage();
     startLoop();
+    canvas.focus({ preventScroll: true });
+  }
+
+  function pauseGame() {
+    if (playState !== "running") {
+      return;
+    }
+
+    stop();
+    playState = "paused";
+    updateStateMessage();
+    render();
+  }
+
+  function resumeGame() {
+    if (playState !== "paused") {
+      return;
+    }
+
+    running = true;
+    playState = "running";
+    updateStateMessage();
+    startLoop();
+    canvas.focus({ preventScroll: true });
+  }
+
+  function handleSpaceToggle() {
+    if (playState === "running") {
+      pauseGame();
+      return;
+    }
+
+    if (playState === "paused") {
+      resumeGame();
+      return;
+    }
+
+    startGame();
   }
 
   function handleKeyDown(event) {
+    if (event.code === "Space") {
+      if (!event.repeat) {
+        event.preventDefault();
+        handleSpaceToggle();
+      }
+      return;
+    }
+
     if (!KEY_SET.has(event.key)) {
       return;
     }
@@ -616,16 +758,12 @@ export function createTetrisGame({
       return;
     }
 
-    if (event.key === " " || event.key === "Space") {
+    if (event.key === "Enter") {
       hardDrop();
       return;
     }
 
-    if (
-      event.key === "Shift" ||
-      event.key === "ShiftLeft" ||
-      event.key === "ShiftRight"
-    ) {
+    if (event.key === "Shift" || event.key === "ShiftLeft" || event.key === "ShiftRight") {
       holdCurrentPiece();
     }
   }
@@ -643,13 +781,16 @@ export function createTetrisGame({
 
   btnRestart.addEventListener("click", function (event) {
     event.currentTarget.blur();
-    start();
+    resetToReady();
   });
 
   return {
-    enter: start,
+    enter: resetToReady,
     leave: stop,
     handleKeyDown: handleKeyDown,
-    handleKeyUp: handleKeyUp
+    handleKeyUp: handleKeyUp,
+    refreshLocale: function () {
+      updateStateMessage();
+    }
   };
 }

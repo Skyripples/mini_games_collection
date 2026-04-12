@@ -33,7 +33,7 @@ export function createReversiGame({
   let animatedFlipKeys = new Set();
   let flipAnimationTimeoutId = null;
   let inputLocked = false;
-  let showHints = true;
+  let showHints = false;
 
   boardElement.tabIndex = 0;
 

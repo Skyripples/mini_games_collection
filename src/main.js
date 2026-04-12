@@ -4,6 +4,7 @@ import {
   initializeI18n,
   onLanguageChange,
   setLanguage,
+  t,
   translatePage
 } from "./core/i18n.js";
 import {
@@ -101,6 +102,10 @@ function renderMenuCards(registry, container) {
   translatePage(container);
 }
 
+function normalizeSearchText(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
 const visibleRegistry = gameRegistry.filter(function (definition) {
   return !definition.hidden;
 });
@@ -111,6 +116,8 @@ const menuButtons = getRequiredElement("menu-buttons");
 const backButton = getRequiredElement("btn-back");
 const languageSelect = getRequiredElement("language-select");
 const themeToggle = getRequiredElement("theme-toggle");
+const searchInput = getRequiredElement("menu-search-input");
+const levelFilterChips = Array.from(document.querySelectorAll("[data-level-filter]"));
 
 renderMenuCards(visibleRegistry, menuButtons);
 
@@ -118,6 +125,45 @@ const entries = initializeRegisteredGames(visibleRegistry, getRequiredElement);
 const games = Object.values(entries).map(function ({ game }) {
   return game;
 });
+let activeLevelFilter = null;
+
+function updateLevelFilterChipState() {
+  levelFilterChips.forEach(function (chip) {
+    const chipLevel = Number(chip.dataset.levelFilter);
+    const isActive = activeLevelFilter === chipLevel;
+    chip.classList.toggle("is-active", isActive);
+    chip.setAttribute("aria-pressed", String(isActive));
+  });
+}
+
+function applyMenuFilters() {
+  const query = normalizeSearchText(searchInput.value);
+
+  visibleRegistry.forEach(function (definition) {
+    const entry = entries[definition.id];
+    if (!entry) {
+      return;
+    }
+
+    const levelMatched = activeLevelFilter === null || definition.menu.level === activeLevelFilter;
+    const title = normalizeSearchText(t(definition.menu.titleKey));
+    const meta = normalizeSearchText(t(definition.menu.metaKey));
+    const searchMatched = query === "" || title.includes(query) || meta.includes(query);
+
+    entry.button.classList.toggle("hidden", !(levelMatched && searchMatched));
+  });
+}
+
+levelFilterChips.forEach(function (chip) {
+  chip.addEventListener("click", function () {
+    const chipLevel = Number(chip.dataset.levelFilter);
+    activeLevelFilter = activeLevelFilter === chipLevel ? null : chipLevel;
+    updateLevelFilterChipState();
+    applyMenuFilters();
+  });
+});
+
+searchInput.addEventListener("input", applyMenuFilters);
 
 const app = createGameHub({
   menuScreen: menuScreen,
@@ -148,6 +194,7 @@ themeToggle.addEventListener("change", function () {
 onLanguageChange(function (language) {
   languageSelect.value = language;
   refreshGameLocales();
+  applyMenuFilters();
 });
 
 onThemeChange(function (theme) {
@@ -155,4 +202,6 @@ onThemeChange(function (theme) {
 });
 
 refreshGameLocales();
+updateLevelFilterChipState();
+applyMenuFilters();
 app.showMenu();
