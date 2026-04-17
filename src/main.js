@@ -156,9 +156,6 @@ entries.leaderboard = {
   game: leaderboard
 };
 
-const games = Object.values(entries).map(function ({ game }) {
-  return game;
-});
 let activeLevelFilter = null;
 
 function updateLevelFilterChipState() {
@@ -210,10 +207,14 @@ const app = createGameHub({
 });
 
 function refreshGameLocales() {
-  games.forEach(function (game) {
-    if (typeof game.refreshLocale === "function") {
+  Object.values(entries).forEach(function (entry) {
+    if (!entry || !entry.panel || entry.panel.classList.contains("hidden")) {
+      return;
+    }
+
+    if (typeof entry.game.refreshLocale === "function") {
       try {
-        game.refreshLocale();
+        entry.game.refreshLocale();
       } catch (error) {
         console.error("Failed to refresh game locale:", error);
       }
