@@ -397,10 +397,7 @@ export const gameRegistry = [
       btnDown: "btn-snake-down",
       btnRight: "btn-snake-right",
       scoreText: "snake-score",
-      message: "snake-message",
-      leaderboardTitle: "snake-leaderboard-title",
-      leaderboardStatus: "snake-leaderboard-status",
-      leaderboardList: "snake-leaderboard-list"
+      message: "snake-message"
     })
   }),
   createRegistryEntry({

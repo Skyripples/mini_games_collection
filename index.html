@@ -87,23 +87,6 @@
         <button id="btn-back" data-i18n="common.backToMenu">回到主選單</button>
       </div>
 
-      <div id="leaderboard-screen" class="game-panel hidden leaderboard-screen">
-        <h2 id="leaderboard-title" data-i18n="leaderboard.title">排行榜</h2>
-        <p id="leaderboard-subtitle" class="leaderboard-subtitle" data-i18n="leaderboard.subtitle">選擇遊戲即可查看前 10 名排行榜；有難度的遊戲會再細分。</p>
-        <p id="leaderboard-context" class="leaderboard-context"></p>
-
-        <div class="leaderboard-nav">
-          <button id="leaderboard-prev" type="button" data-i18n="leaderboard.prev">上一頁</button>
-          <p id="leaderboard-page-info" class="leaderboard-page-info">第 1 頁 / 共 1 頁</p>
-          <button id="leaderboard-next" type="button" data-i18n="leaderboard.next">下一頁</button>
-        </div>
-
-        <div id="leaderboard-tabs" class="leaderboard-tabs" aria-label="排行榜遊戲分頁"></div>
-        <div id="leaderboard-difficulty-tabs" class="leaderboard-tabs leaderboard-difficulty-tabs hidden" aria-label="排行榜難度分頁"></div>
-        <p id="leaderboard-status" class="leaderboard-status" aria-live="polite">載入排行榜中...</p>
-        <ol id="leaderboard-list" class="leaderboard-list"></ol>
-      </div>
-
       <div id="game-1a2b" class="game-panel hidden">
         <h2 data-i18n="1a2b.title">猜數字</h2>
         <p data-i18n="1a2b.description">猜出 4 位不重複的數字，依照 A 與 B 的提示逐步縮小範圍。</p>
@@ -236,11 +219,6 @@
         </div>
         <p><span data-i18n="common.score">分數：</span><span id="snake-score">0</span></p>
         <p id="snake-message">按空白鍵開始，方向鍵控制移動。</p>
-        <section class="snake-leaderboard" aria-labelledby="snake-leaderboard-title">
-          <h3 id="snake-leaderboard-title" data-i18n="snake.leaderboard.title">排行榜</h3>
-          <p id="snake-leaderboard-status" class="snake-leaderboard-status" aria-live="polite" data-i18n="snake.leaderboard.loading">排行榜載入中...</p>
-          <ol id="snake-leaderboard-list" class="snake-leaderboard-list"></ol>
-        </section>
         <div class="snake-layout">
           <canvas id="snake-canvas" width="600" height="600"></canvas>
           <div class="snake-touch-controls">
@@ -817,6 +795,35 @@
           <div id="go-board" class="go-board"></div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div id="leaderboard-modal" class="leaderboard-modal hidden" aria-hidden="true">
+    <div class="leaderboard-modal__backdrop" data-leaderboard-close></div>
+    <div
+      id="leaderboard-screen"
+      class="game-panel leaderboard-screen leaderboard-modal__dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="leaderboard-title"
+    >
+      <div class="leaderboard-modal__header">
+        <button id="btn-leaderboard-close" type="button" data-i18n="leaderboard.close">關閉</button>
+      </div>
+      <h2 id="leaderboard-title" data-i18n="leaderboard.title">排行榜</h2>
+      <p id="leaderboard-subtitle" class="leaderboard-subtitle" data-i18n="leaderboard.subtitle">選擇遊戲即可查看前 5 名排行榜；有難度的遊戲會再細分。</p>
+      <p id="leaderboard-context" class="leaderboard-context"></p>
+
+      <div class="leaderboard-nav">
+        <button id="leaderboard-prev" type="button" data-i18n="leaderboard.prev">上一頁</button>
+        <p id="leaderboard-page-info" class="leaderboard-page-info">第 1 頁 / 共 1 頁</p>
+        <button id="leaderboard-next" type="button" data-i18n="leaderboard.next">下一頁</button>
+      </div>
+
+      <div id="leaderboard-tabs" class="leaderboard-tabs" aria-label="排行榜遊戲分頁"></div>
+      <div id="leaderboard-difficulty-tabs" class="leaderboard-tabs leaderboard-difficulty-tabs hidden" aria-label="排行榜難度分頁"></div>
+      <p id="leaderboard-status" class="leaderboard-status" aria-live="polite">載入排行榜中...</p>
+      <ol id="leaderboard-list" class="leaderboard-list"></ol>
     </div>
   </div>
 

@@ -116,6 +116,8 @@ const menuScreen = getRequiredElement("menu-screen");
 const gameScreen = getRequiredElement("game-screen");
 const menuButtons = getRequiredElement("menu-buttons");
 const leaderboardButton = getRequiredElement("btn-leaderboard");
+const leaderboardModal = getRequiredElement("leaderboard-modal");
+const leaderboardCloseButton = getRequiredElement("btn-leaderboard-close");
 const backButton = getRequiredElement("btn-back");
 const languageSelect = getRequiredElement("language-select");
 const apiSourceSelect = getRequiredElement("api-source-select");
@@ -149,12 +151,6 @@ const leaderboard = createLeaderboardBrowser({
   statusElement: leaderboardStatus,
   listElement: leaderboardList
 });
-
-entries.leaderboard = {
-  button: leaderboardButton,
-  panel: getRequiredElement("leaderboard-screen"),
-  game: leaderboard
-};
 
 let activeLevelFilter = null;
 
@@ -206,6 +202,39 @@ const app = createGameHub({
   entries: entries
 });
 
+function openLeaderboardModal() {
+  leaderboardModal.classList.remove("hidden");
+  leaderboardModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  leaderboard.enter();
+  leaderboardCloseButton.focus();
+}
+
+function closeLeaderboardModal() {
+  leaderboard.leave();
+  leaderboardModal.classList.add("hidden");
+  leaderboardModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+  leaderboardButton.focus();
+}
+
+leaderboardButton.addEventListener("click", openLeaderboardModal);
+leaderboardCloseButton.addEventListener("click", closeLeaderboardModal);
+leaderboardModal.addEventListener("click", function (event) {
+  const target = event.target;
+
+  if (target instanceof Element && target.closest("[data-leaderboard-close]")) {
+    closeLeaderboardModal();
+  }
+});
+
+document.addEventListener("keydown", function (event) {
+  if (event.key === "Escape" && !leaderboardModal.classList.contains("hidden")) {
+    event.preventDefault();
+    closeLeaderboardModal();
+  }
+});
+
 function refreshGameLocales() {
   Object.values(entries).forEach(function (entry) {
     if (!entry || !entry.panel || entry.panel.classList.contains("hidden")) {
@@ -241,6 +270,7 @@ themeToggle.addEventListener("change", function () {
 onLanguageChange(function (language) {
   languageSelect.value = language;
   refreshGameLocales();
+  leaderboard.refreshLocale();
   applyMenuFilters();
 });
 
