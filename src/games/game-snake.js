@@ -1,3 +1,4 @@
+import { getLeaderboardApiUrl, onLeaderboardApiModeChange } from "../core/api.js";
 import { t } from "../core/i18n.js";
 
 const BASE_STEP_MS = 140;
@@ -9,6 +10,7 @@ const SKULL_VISIBLE_MS = 10000;
 const STAR_FRUIT_THRESHOLD = 10;
 const MAX_SPAWN_ATTEMPTS = 5000;
 const SKULL_HEAD_BUFFER = 6;
+const LEADERBOARD_LIMIT = 10;
 
 const FRUIT_DEFS = [
   { kind: "watermelon", points: 1, popup: "+1", color: "#ef4444" },
@@ -26,7 +28,9 @@ export function createSnakeGame({
   btnDown,
   btnRight,
   scoreText,
-  message
+  message,
+  leaderboardStatus,
+  leaderboardList
 }) {
   const context = canvas.getContext("2d");
   const gridSize = 20;
@@ -56,6 +60,11 @@ export function createSnakeGame({
   let gameState = "ready";
   let messageKey = "snake.message.start";
   let messageParams = {};
+  let hasSubmittedScore = false;
+  let leaderboardStatusKey = "snake.leaderboard.loading";
+  let leaderboardStatusParams = {};
+  let leaderboardRequestId = 0;
+  let isActive = false;
 
   function setMessage(key, params) {
     messageKey = key;
@@ -70,6 +79,191 @@ export function createSnakeGame({
   function updateScoreDisplay() {
     scoreText.textContent = String(score);
   }
+
+  function normalizeLeaderboardItems(payload) {
+    if (Array.isArray(payload)) {
+      return payload;
+    }
+
+    if (!payload || typeof payload !== "object") {
+      return [];
+    }
+
+    if (Array.isArray(payload.items)) {
+      return payload.items;
+    }
+
+    if (Array.isArray(payload.leaderboard)) {
+      return payload.leaderboard;
+    }
+
+    if (Array.isArray(payload.data)) {
+      return payload.data;
+    }
+
+    if (Array.isArray(payload.results)) {
+      return payload.results;
+    }
+
+    return [];
+  }
+
+  function getLeaderboardName(item) {
+    if (item && item.player_name !== undefined && item.player_name !== null) {
+      return String(item.player_name);
+    }
+
+    if (item && item.playerName !== undefined && item.playerName !== null) {
+      return String(item.playerName);
+    }
+
+    if (item && item.name !== undefined && item.name !== null) {
+      return String(item.name);
+    }
+
+    return "Unknown";
+  }
+
+  function getLeaderboardScore(item) {
+    if (item && item.score !== undefined && item.score !== null) {
+      return String(item.score);
+    }
+
+    return "0";
+  }
+
+  function setLeaderboardStatus(key, params) {
+    leaderboardStatusKey = key || "";
+    leaderboardStatusParams = params || {};
+
+    if (!leaderboardStatus) {
+      return;
+    }
+
+    leaderboardStatus.textContent = leaderboardStatusKey ? t(leaderboardStatusKey, leaderboardStatusParams) : "";
+  }
+
+  function refreshLeaderboardStatus() {
+    if (!leaderboardStatus) {
+      return;
+    }
+
+    leaderboardStatus.textContent = leaderboardStatusKey ? t(leaderboardStatusKey, leaderboardStatusParams) : "";
+  }
+
+  function renderLeaderboard(items) {
+    if (!leaderboardList) {
+      return;
+    }
+
+    const entries = Array.isArray(items) ? items.slice(0, LEADERBOARD_LIMIT) : [];
+    leaderboardList.innerHTML = "";
+
+    entries.forEach(function (item, index) {
+      const li = document.createElement("li");
+      li.className = "snake-leaderboard-item";
+
+      const rank = document.createElement("span");
+      rank.className = "snake-leaderboard-rank";
+      rank.textContent = `${index + 1}.`;
+
+      const name = document.createElement("span");
+      name.className = "snake-leaderboard-name";
+      name.textContent = getLeaderboardName(item);
+
+      const scoreValue = Number(item.score);
+      const scoreNode = document.createElement("span");
+      scoreNode.className = "snake-leaderboard-score";
+      scoreNode.textContent = Number.isFinite(scoreValue) ? String(scoreValue) : getLeaderboardScore(item);
+
+      li.append(rank, name, scoreNode);
+      leaderboardList.appendChild(li);
+    });
+  }
+
+  async function loadLeaderboard() {
+    const requestId = ++leaderboardRequestId;
+
+    if (!leaderboardList && !leaderboardStatus) {
+      return;
+    }
+
+    renderLeaderboard([]);
+    setLeaderboardStatus("snake.leaderboard.loading");
+
+    try {
+      if (typeof fetch !== "function") {
+        throw new Error("fetch is not available");
+      }
+
+      const response = await fetch(`${getLeaderboardApiUrl()}?gameId=snake&limit=${LEADERBOARD_LIMIT}`);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const text = await response.text();
+      const payload = text ? JSON.parse(text) : [];
+
+      if (requestId !== leaderboardRequestId) {
+        return;
+      }
+
+      const items = normalizeLeaderboardItems(payload);
+      renderLeaderboard(items);
+
+      if (items.length === 0) {
+        setLeaderboardStatus("snake.leaderboard.empty");
+      } else {
+        setLeaderboardStatus("");
+      }
+    } catch (error) {
+      if (requestId !== leaderboardRequestId) {
+        return;
+      }
+
+      console.error("Failed to load snake leaderboard:", error);
+      renderLeaderboard([]);
+      setLeaderboardStatus("snake.leaderboard.failed");
+    }
+  }
+
+  async function submitSnakeScore() {
+    if (hasSubmittedScore) {
+      return;
+    }
+
+    hasSubmittedScore = true;
+
+    try {
+      if (typeof fetch !== "function") {
+        throw new Error("fetch is not available");
+      }
+
+      const response = await fetch(getLeaderboardApiUrl(), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          gameId: "snake",
+          playerName: "Master",
+          score
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Failed to submit snake score:", error);
+    }
+  }
+
+  onLeaderboardApiModeChange(function () {
+    if (isActive) {
+      void loadLeaderboard();
+    }
+  });
 
   function getMoveDelay() {
     return speedBoostRemainingMs > 0 ? BOOSTED_STEP_MS : BASE_STEP_MS;
@@ -851,6 +1045,9 @@ export function createSnakeGame({
   function triggerGameOver() {
     gameState = "gameOver";
     setMessage("snake.message.gameOver", { score });
+    void submitSnakeScore().finally(function () {
+      void loadLeaderboard();
+    });
     stopLoop();
     draw();
   }
@@ -1014,6 +1211,7 @@ export function createSnakeGame({
     skullCountdownMs = SKULL_SPAWN_DELAY_MS;
     skullRemainingMs = 0;
     gameState = "ready";
+    hasSubmittedScore = false;
     updateScoreDisplay();
     syncFruits();
     setMessage("snake.message.start");
@@ -1026,6 +1224,17 @@ export function createSnakeGame({
     gameState = "running";
     setMessage("snake.message.running");
     requestFrame();
+  }
+
+  function enterGame() {
+    isActive = true;
+    resetToReady();
+    void loadLeaderboard();
+  }
+
+  function leaveGame() {
+    isActive = false;
+    stopLoop();
   }
 
   function togglePauseOrStart() {
@@ -1106,11 +1315,12 @@ export function createSnakeGame({
   bindDirectionButton(btnRight, "ArrowRight");
 
   return {
-    enter: resetToReady,
-    leave: stopLoop,
+    enter: enterGame,
+    leave: leaveGame,
     handleKeyDown,
     refreshLocale: function () {
       refreshMessage();
+      refreshLeaderboardStatus();
       draw();
     }
   };

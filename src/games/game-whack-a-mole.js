@@ -1,32 +1,37 @@
 import { t } from "../core/i18n.js";
 
 const ROUND_SECONDS = 30;
-const BOMB_CHANCE = 0.22;
+const BOMB_CHANCE = 0;
 const EFFECT_MS = 240;
-const SPAWN_STAGGER_MS = 500;
-const WAVE_GAP_MS = 260;
+const MISS_RETRACT_MS = 220;
 const BOMB_PENALTY = 2;
 
 const DIFFICULTY_SETTINGS = {
   easy: {
     rows: 3,
     cols: 3,
-    waveCount: 1,
-    activeMs: 1000,
+    concurrentCount: 1,
+    spawnIntervalMs: 1450,
+    activeMs: 1300,
+    spawnStaggerMs: 0,
     labelKey: "common.easy"
   },
   normal: {
     rows: 4,
     cols: 4,
-    waveCount: 2,
-    activeMs: 1500,
+    concurrentCount: 2,
+    spawnIntervalMs: 1050,
+    activeMs: 1100,
+    spawnStaggerMs: 180,
     labelKey: "common.normal"
   },
   hard: {
     rows: 5,
     cols: 5,
-    waveCount: 3,
-    activeMs: 2000,
+    concurrentCount: 3,
+    spawnIntervalMs: 780,
+    activeMs: 900,
+    spawnStaggerMs: 120,
     labelKey: "common.hard"
   }
 };
@@ -120,11 +125,19 @@ export function createWhackAMoleGame({
     }
   }
 
-  function createEntity(type) {
+  function createEntity(type, options = {}) {
+    const isFresh = options.isFresh === true;
+    const isRetracting = options.isRetracting === true;
     const entity = document.createElement("span");
 
     if (type === "bomb" || type === "bomb-hit") {
       entity.className = "whack-bomb";
+      if (isFresh) {
+        entity.classList.add("whack-bomb--spawn");
+      }
+      if (isRetracting) {
+        entity.classList.add("whack-bomb--miss");
+      }
       if (type === "bomb-hit") {
         entity.classList.add("whack-bomb--hit");
       }
@@ -132,6 +145,12 @@ export function createWhackAMoleGame({
     }
 
     entity.className = "whack-mole";
+    if (isFresh) {
+      entity.classList.add("whack-mole--spawn");
+    }
+    if (isRetracting) {
+      entity.classList.add("whack-mole--miss");
+    }
     if (type === "mole-hit") {
       entity.classList.add("whack-mole--hit");
     }
@@ -185,7 +204,12 @@ export function createWhackAMoleGame({
       hole.appendChild(tunnel);
 
       if (activeItem) {
-        tunnel.appendChild(createEntity(activeItem.type));
+        tunnel.appendChild(
+          createEntity(activeItem.type, {
+            isFresh: activeItem.isFresh,
+            isRetracting: activeItem.isRetracting
+          })
+        );
       }
 
       if (effectItem) {
@@ -197,6 +221,9 @@ export function createWhackAMoleGame({
     }
 
     boardElement.appendChild(fragment);
+    activeItems.forEach(function (item) {
+      item.isFresh = false;
+    });
     updateStats();
   }
 
@@ -223,6 +250,9 @@ export function createWhackAMoleGame({
     activeItems.forEach(function (item) {
       if (item.hideTimeoutId) {
         clearTimeout(item.hideTimeoutId);
+      }
+      if (item.retractTimeoutId) {
+        clearTimeout(item.retractTimeoutId);
       }
     });
     activeItems = [];
@@ -287,6 +317,10 @@ export function createWhackAMoleGame({
       clearTimeout(removed.hideTimeoutId);
       removed.hideTimeoutId = null;
     }
+    if (removed.retractTimeoutId) {
+      clearTimeout(removed.retractTimeoutId);
+      removed.retractTimeoutId = null;
+    }
 
     return removed;
   }
@@ -302,7 +336,36 @@ export function createWhackAMoleGame({
     return removeActiveItemById(item.id);
   }
 
+  function startItemRetract(itemId) {
+    const item = activeItems.find(function (candidate) {
+      return candidate.id === itemId;
+    });
+
+    if (!item || item.isRetracting) {
+      return;
+    }
+
+    if (item.hideTimeoutId) {
+      clearTimeout(item.hideTimeoutId);
+      item.hideTimeoutId = null;
+    }
+
+    item.isFresh = false;
+    item.isRetracting = true;
+    renderBoard();
+
+    item.retractTimeoutId = window.setTimeout(function () {
+      removeActiveItemById(item.id);
+      renderBoard();
+    }, MISS_RETRACT_MS);
+  }
+
   function spawnOneItem() {
+    const setting = getDifficultySetting();
+    if (activeItems.length >= setting.concurrentCount) {
+      return;
+    }
+
     const nextIndex = chooseNextHole();
     if (nextIndex === null) {
       return;
@@ -313,14 +376,15 @@ export function createWhackAMoleGame({
       id: nextItemId,
       index: nextIndex,
       type: nextType,
-      hideTimeoutId: null
+      hideTimeoutId: null,
+      retractTimeoutId: null,
+      isFresh: true,
+      isRetracting: false
     };
 
     nextItemId += 1;
-    const setting = getDifficultySetting();
     item.hideTimeoutId = window.setTimeout(function () {
-      removeActiveItemById(item.id);
-      renderBoard();
+      startItemRetract(item.id);
     }, setting.activeMs);
 
     activeItems.push(item);
@@ -341,7 +405,7 @@ export function createWhackAMoleGame({
       }
 
       const setting = getDifficultySetting();
-      for (let index = 0; index < setting.waveCount; index += 1) {
+      for (let index = 0; index < setting.concurrentCount; index += 1) {
         const stepTimeoutId = window.setTimeout(function () {
           spawnStepTimeoutIds = spawnStepTimeoutIds.filter(function (timeoutId) {
             return timeoutId !== stepTimeoutId;
@@ -352,12 +416,12 @@ export function createWhackAMoleGame({
           }
 
           spawnOneItem();
-        }, index * SPAWN_STAGGER_MS);
+        }, index * setting.spawnStaggerMs);
 
         spawnStepTimeoutIds.push(stepTimeoutId);
       }
 
-      queueNextWave(setting.activeMs + WAVE_GAP_MS);
+      queueNextWave(setting.spawnIntervalMs);
     }, delay);
   }
 
@@ -516,7 +580,7 @@ export function createWhackAMoleGame({
 
     const holeIndex = Number(hole.dataset.index);
     const activeItem = getActiveItemByIndex(holeIndex);
-    if (!activeItem) {
+    if (!activeItem || activeItem.isRetracting) {
       return;
     }
 

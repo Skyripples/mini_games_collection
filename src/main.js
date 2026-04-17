@@ -7,12 +7,14 @@ import {
   t,
   translatePage
 } from "./core/i18n.js";
+import { getLeaderboardApiMode, setLeaderboardApiMode } from "./core/api.js";
 import {
   getTheme,
   initializeTheme,
   onThemeChange,
   setTheme
 } from "./core/theme.js";
+import { createLeaderboardBrowser } from "./core/leaderboard.js";
 import { gameRegistry } from "./games/index.js";
 
 initializeTheme();
@@ -36,7 +38,7 @@ function initializeRegisteredGames(registry, getElementById) {
         {
           button: getElementById(definition.buttonId),
           panel: getElementById(definition.panelId),
-          game: definition.createGame({ getElementById: getElementById })
+          game: definition.createGame({ getElementById: getElementById, definition: definition })
         }
       ];
     })
@@ -113,15 +115,47 @@ const visibleRegistry = gameRegistry.filter(function (definition) {
 const menuScreen = getRequiredElement("menu-screen");
 const gameScreen = getRequiredElement("game-screen");
 const menuButtons = getRequiredElement("menu-buttons");
+const leaderboardButton = getRequiredElement("btn-leaderboard");
 const backButton = getRequiredElement("btn-back");
 const languageSelect = getRequiredElement("language-select");
+const apiSourceSelect = getRequiredElement("api-source-select");
 const themeToggle = getRequiredElement("theme-toggle");
 const searchInput = getRequiredElement("menu-search-input");
 const levelFilterChips = Array.from(document.querySelectorAll("[data-level-filter]"));
+const leaderboardTitle = getRequiredElement("leaderboard-title");
+const leaderboardContext = getRequiredElement("leaderboard-context");
+const leaderboardSubtitle = getRequiredElement("leaderboard-subtitle");
+const leaderboardPageInfo = getRequiredElement("leaderboard-page-info");
+const leaderboardPrev = getRequiredElement("leaderboard-prev");
+const leaderboardNext = getRequiredElement("leaderboard-next");
+const leaderboardTabs = getRequiredElement("leaderboard-tabs");
+const leaderboardDifficultyTabs = getRequiredElement("leaderboard-difficulty-tabs");
+const leaderboardStatus = getRequiredElement("leaderboard-status");
+const leaderboardList = getRequiredElement("leaderboard-list");
 
 renderMenuCards(visibleRegistry, menuButtons);
 
 const entries = initializeRegisteredGames(visibleRegistry, getRequiredElement);
+const leaderboard = createLeaderboardBrowser({
+  games: visibleRegistry,
+  titleElement: leaderboardTitle,
+  contextElement: leaderboardContext,
+  subtitleElement: leaderboardSubtitle,
+  pageInfoElement: leaderboardPageInfo,
+  prevButton: leaderboardPrev,
+  nextButton: leaderboardNext,
+  tabsContainer: leaderboardTabs,
+  difficultyTabsContainer: leaderboardDifficultyTabs,
+  statusElement: leaderboardStatus,
+  listElement: leaderboardList
+});
+
+entries.leaderboard = {
+  button: leaderboardButton,
+  panel: getRequiredElement("leaderboard-screen"),
+  game: leaderboard
+};
+
 const games = Object.values(entries).map(function ({ game }) {
   return game;
 });
@@ -149,8 +183,11 @@ function applyMenuFilters() {
     const title = normalizeSearchText(t(definition.menu.titleKey));
     const meta = normalizeSearchText(t(definition.menu.metaKey));
     const searchMatched = query === "" || title.includes(query) || meta.includes(query);
+    const isVisible = levelMatched && searchMatched;
 
-    entry.button.classList.toggle("hidden", !(levelMatched && searchMatched));
+    entry.button.hidden = !isVisible;
+    entry.button.classList.toggle("hidden", !isVisible);
+    entry.button.style.display = isVisible ? "" : "none";
   });
 }
 
@@ -181,10 +218,15 @@ function refreshGameLocales() {
 }
 
 languageSelect.value = getLanguage();
+apiSourceSelect.value = getLeaderboardApiMode();
 themeToggle.checked = getTheme() === "dark";
 
 languageSelect.addEventListener("change", function (event) {
   setLanguage(event.target.value);
+});
+
+apiSourceSelect.addEventListener("change", function (event) {
+  setLeaderboardApiMode(event.target.value);
 });
 
 themeToggle.addEventListener("change", function () {

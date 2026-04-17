@@ -12,6 +12,10 @@ const translations = {
     "settings.language.zh": "中文",
     "settings.language.en": "英文",
     "settings.darkMode": "深色模式",
+    "settings.apiSource": "排行榜來源",
+    "settings.apiSource.auto": "自動",
+    "settings.apiSource.local": "本機",
+    "settings.apiSource.production": "正式",
     "menu.level.1": "Lv.1 入門",
     "menu.level.2": "Lv.2 基礎互動",
     "menu.level.3": "Lv.3 中階規則",
@@ -110,6 +114,10 @@ const translations = {
     "snake.overlay.paused": "PAUSED",
     "snake.overlay.resume": "TO RESUME",
     "snake.overlay.moveHint": "TO MOVE",
+    "snake.leaderboard.title": "排行榜",
+    "snake.leaderboard.loading": "排行榜載入中...",
+    "snake.leaderboard.empty": "目前沒有排行榜資料",
+    "snake.leaderboard.failed": "排行榜載入失敗",
     "minesweeper.title": "踩地雷",
     "minesweeper.message.start": "左鍵翻開格子，右鍵插旗。",
     "minesweeper.message.hitMine": "你踩到地雷了！",
@@ -267,6 +275,10 @@ const translations = {
     "settings.language.zh": "Chinese",
     "settings.language.en": "English",
     "settings.darkMode": "Dark Mode",
+    "settings.apiSource": "Leaderboard Source",
+    "settings.apiSource.auto": "Auto",
+    "settings.apiSource.local": "Local",
+    "settings.apiSource.production": "Production",
     "menu.level.1": "Lv.1 Intro",
     "menu.level.2": "Lv.2 Interaction",
     "menu.level.3": "Lv.3 Mid Rules",
@@ -365,6 +377,10 @@ const translations = {
     "snake.overlay.paused": "PAUSED",
     "snake.overlay.resume": "TO RESUME",
     "snake.overlay.moveHint": "TO MOVE",
+    "snake.leaderboard.title": "Leaderboard",
+    "snake.leaderboard.loading": "Loading leaderboard...",
+    "snake.leaderboard.empty": "No leaderboard data yet.",
+    "snake.leaderboard.failed": "Failed to load leaderboard.",
     "minesweeper.title": "Minesweeper",
     "minesweeper.message.start": "Left click to reveal cells, right click to place flags.",
     "minesweeper.message.hitMine": "You hit a mine!",
@@ -894,6 +910,7 @@ Object.assign(translations.zh, {
   "raiden.message.paused": "\u5df2\u66ab\u505c\uff0c\u6309\u7a7a\u767d\u9375\u7e7c\u7e8c\u3002",
   "raiden.message.screenClearUsed": "\u5168\u5c4f\u6e05\u9664\u555f\u52d5\uff0c\u6467\u6bc0 {count} \u67b6\u6575\u6a5f\u3002\u5269\u9918 {left} \u6b21\u3002",
   "raiden.message.screenClearEmpty": "\u5168\u5c4f\u6e05\u9664\u6b21\u6578\u5df2\u7528\u5b8c\u3002",
+  "common.time": "\u6642\u9593\uff1a",
   "common.newbieAssist": "\u65b0\u624b\u8f14\u52a9",
   "whack.message.paused": "\u5df2\u66ab\u505c\uff0c\u6309\u7a7a\u767d\u9375\u7e7c\u7e8c\u3002",
   "whack.message.bomb": "\u6572\u5230\u70b8\u5f48\uff0c\u6263 2 \u5206\u3002",
@@ -912,8 +929,31 @@ Object.assign(translations.en, {
   "raiden.message.running": "Move with Left and Right. Press Space to pause. Press X to clear all enemies.",
   "raiden.message.screenClearUsed": "Screen clear activated. Destroyed {count} enemies. {left} uses left.",
   "raiden.message.screenClearEmpty": "No screen-clear uses left.",
+  "common.time": "Time: ",
   "common.newbieAssist": "Newbie Assist",
   "whack.message.bomb": "Bomb hit. -2 points."
+});
+
+Object.assign(translations.zh, {
+  "breakout.mode.classic": "一般模式",
+  "breakout.mode.endless": "無盡模式",
+  "breakout.message.endlessReady": "按空白鍵開始，無盡模式會在最底層清空後持續往下加層。",
+  "breakout.message.rowShift": "最底層清空，磚塊往下移動了一層。",
+  "breakout.message.ballBig": "球變大了！",
+  "breakout.message.ballSmall": "球變小了！",
+  "breakout.message.paddleLong": "板子變長了！",
+  "breakout.message.paddleShort": "板子變短了！"
+});
+
+Object.assign(translations.en, {
+  "breakout.mode.classic": "Classic Mode",
+  "breakout.mode.endless": "Endless Mode",
+  "breakout.message.endlessReady": "Press Space to start. Endless mode keeps adding rows after the bottom row clears.",
+  "breakout.message.rowShift": "Bottom row cleared. The bricks shifted down one row.",
+  "breakout.message.ballBig": "Ball size increased!",
+  "breakout.message.ballSmall": "Ball size decreased!",
+  "breakout.message.paddleLong": "Paddle length increased!",
+  "breakout.message.paddleShort": "Paddle length decreased!"
 });
 
 Object.assign(translations.zh, {
@@ -1026,7 +1066,114 @@ Object.assign(translations.en, {
   "checkers.player.orange": "Orange"
 });
 
+Object.assign(translations.zh, {
+  "common.steps": "步數：",
+  "common.combo": "連擊：",
+  "menu.maze.title": "迷宮",
+  "menu.maze.meta": "在迷宮中找到出口",
+  "menu.flappy.title": "Flappy Bird",
+  "menu.flappy.meta": "拍動翅膀穿過管道",
+  "menu.rhythm.title": "節奏遊戲",
+  "menu.rhythm.meta": "跟著節拍挑戰連擊",
+  "menu.roguelike.title": "Roguelike",
+  "menu.roguelike.meta": "探索地城、收集寶石",
+  "maze.title": "迷宮",
+  "maze.description": "在迷宮中找到出口，步數越少越好。",
+  "maze.message.start": "使用方向鍵或 WASD 找到出口。",
+  "maze.message.win": "成功走出迷宮，步數 {steps}，時間 {time}。",
+  "flappy.title": "Flappy Bird",
+  "flappy.description": "按空白鍵拍動翅膀，穿過管道往前飛。",
+  "flappy.message.start": "按空白鍵開始，或點擊畫面起飛。",
+  "flappy.message.running": "持續拍動翅膀，避開管道並往前飛。",
+  "flappy.message.gameOver": "遊戲結束，最後分數：{score}",
+  "rhythm.title": "節奏遊戲",
+  "rhythm.description": "跟著節拍按下對應方向鍵，累積連擊與分數。",
+  "rhythm.message.start": "按空白鍵開始，方向鍵對應四條軌道。",
+  "rhythm.message.running": "跟著節拍按下方向鍵，空白鍵可暫停。",
+  "rhythm.message.paused": "已暫停，按空白鍵繼續。",
+  "rhythm.message.clear": "演奏完成，分數 {score}，準確率 {accuracy}%。",
+  "rhythm.message.gameOver": "遊戲結束，分數 {score}。",
+  "roguelike.title": "Roguelike",
+  "roguelike.description": "探索隨機地城，收集寶石並擊敗怪物往出口前進。",
+  "roguelike.floor": "樓層：",
+  "roguelike.message.start": "探索地城，收集寶石並找到出口。",
+  "roguelike.message.exitReady": "出口已開啟，前往下一層吧。",
+  "roguelike.message.floorClear": "通過第 {floor} 層，下一層已生成。",
+  "roguelike.message.gameOver": "冒險失敗，請重新挑戰。",
+  "raiden.description": "\u4e0a\u4e0b\u5de6\u53f3\u79fb\u52d5\u6230\u6a5f\uff0c\u81ea\u52d5\u958b\u706b\u64ca\u843d\u654c\u6a5f\u3002",
+  "raiden.message.ready": "\u6309\u7a7a\u767d\u9375\u958b\u59cb\uff0c\u65b9\u5411\u9375\u53ef\u4e0a\u4e0b\u5de6\u53f3\u79fb\u52d5\uff0cX \u53ef\u5168\u5c4f\u6e05\u9664\u6575\u6a5f\u3002",
+  "raiden.message.running": "\u65b9\u5411\u9375\u53ef\u4e0a\u4e0b\u5de6\u53f3\u79fb\u52d5\uff0c\u7a7a\u767d\u9375\u53ef\u66ab\u505c\uff0cX \u53ef\u5168\u5c4f\u6e05\u9664\u6575\u6a5f\u3002"
+});
+
+Object.assign(translations.en, {
+  "common.steps": "Steps: ",
+  "common.combo": "Combo: ",
+  "menu.maze.title": "Maze",
+  "menu.maze.meta": "Find the exit in the maze",
+  "menu.flappy.title": "Flappy Bird",
+  "menu.flappy.meta": "Flap through the pipes",
+  "menu.rhythm.title": "Rhythm Game",
+  "menu.rhythm.meta": "Hit the beat and chain combos",
+  "menu.roguelike.title": "Roguelike",
+  "menu.roguelike.meta": "Explore dungeons and collect gems",
+  "maze.title": "Maze",
+  "maze.description": "Find the exit in the maze with as few steps as possible.",
+  "maze.message.start": "Use the arrow keys or WASD to find the exit.",
+  "maze.message.win": "You escaped the maze in {steps} steps and {time}.",
+  "flappy.title": "Flappy Bird",
+  "flappy.description": "Flap through the pipes and keep flying forward.",
+  "flappy.message.start": "Press Space to start or click to flap.",
+  "flappy.message.running": "Keep flapping, avoid the pipes, and fly forward.",
+  "flappy.message.gameOver": "Game over. Final score: {score}",
+  "rhythm.title": "Rhythm Game",
+  "rhythm.description": "Hit the matching lane keys in time to build combos and score.",
+  "rhythm.message.start": "Press Space to start. The arrow keys match the four lanes.",
+  "rhythm.message.running": "Hit the beat with the arrow keys. Press Space to pause.",
+  "rhythm.message.paused": "Paused. Press Space to continue.",
+  "rhythm.message.clear": "Song cleared. Score {score}, accuracy {accuracy}%.",
+  "rhythm.message.gameOver": "Game over. Score {score}.",
+  "roguelike.title": "Roguelike",
+  "roguelike.description": "Explore random dungeons, collect gems, and reach the exit.",
+  "roguelike.floor": "Floor: ",
+  "roguelike.message.start": "Explore the dungeon, collect gems, and find the exit.",
+  "roguelike.message.exitReady": "The exit is open. Move on to the next floor.",
+  "roguelike.message.floorClear": "Floor {floor} cleared. The next floor is ready.",
+  "roguelike.message.gameOver": "Adventure failed. Try again.",
+  "raiden.description": "Move in four directions, auto-fire, and survive mixed enemy waves.",
+  "raiden.message.ready": "Press Space to start. Move in four directions with arrow keys. Press X to clear all enemies.",
+  "raiden.message.running": "Move in four directions with arrow keys. Press Space to pause. Press X to clear all enemies."
+});
+
+Object.assign(translations.zh, {
+  "leaderboard.button": "排行榜",
+  "leaderboard.title": "排行榜",
+  "leaderboard.subtitle": "選擇遊戲即可查看前 5 名排行榜；有難度的遊戲會再細分。",
+  "leaderboard.context": "遊戲：{game}{difficulty}",
+  "leaderboard.promptName": "請輸入玩家名稱：",
+  "leaderboard.prev": "上一頁",
+  "leaderboard.next": "下一頁",
+  "leaderboard.pageInfo": "第 {current} 頁 / 共 {total} 頁",
+  "leaderboard.loading": "載入排行榜中...",
+  "leaderboard.empty": "目前沒有排行榜資料",
+  "leaderboard.failed": "排行榜載入失敗"
+});
+
+Object.assign(translations.en, {
+  "leaderboard.button": "Leaderboard",
+  "leaderboard.title": "Leaderboard",
+  "leaderboard.subtitle": "Select a game to view its top 5 leaderboard. Games with difficulty modes are split further.",
+  "leaderboard.context": "Game: {game}{difficulty}",
+  "leaderboard.promptName": "Please enter your player name:",
+  "leaderboard.prev": "Previous",
+  "leaderboard.next": "Next",
+  "leaderboard.pageInfo": "Page {current} / {total}",
+  "leaderboard.loading": "Loading leaderboard...",
+  "leaderboard.empty": "No leaderboard data yet.",
+  "leaderboard.failed": "Failed to load leaderboard."
+});
+
 const listeners = new Set();
+let lastTranslationContext = null;
 
 function getStoredLanguage() {
   try {
@@ -1058,12 +1205,29 @@ export function t(key, params) {
   const languageMap = translations[currentLanguage] || translations[DEFAULT_LANGUAGE];
   const defaultMap = translations[DEFAULT_LANGUAGE];
   const template = languageMap[key] || defaultMap[key] || key;
+  const translationContext = {
+    key: key,
+    params: params || {},
+    language: currentLanguage
+  };
+  lastTranslationContext = translationContext;
+  window.setTimeout(function () {
+    if (lastTranslationContext === translationContext) {
+      lastTranslationContext = null;
+    }
+  }, 0);
 
   if (!params) {
     return template;
   }
 
   return formatTemplate(template, params);
+}
+
+export function consumeTranslationContext() {
+  const context = lastTranslationContext;
+  lastTranslationContext = null;
+  return context;
 }
 
 export function getLanguage() {
