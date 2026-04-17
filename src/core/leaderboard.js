@@ -1,6 +1,6 @@
 import { getLeaderboardApiCandidates, onLeaderboardApiModeChange } from "./api.js";
 import { t } from "./i18n.js";
-const LEADERBOARD_LIMIT = 10;
+const LEADERBOARD_LIMIT = 5;
 const LEADERBOARD_PAGE_SIZE = 6;
 
 const DIFFICULTY_LABEL_KEYS = {

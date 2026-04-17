@@ -49,6 +49,10 @@ body {
   transition: background 180ms ease, color 180ms ease;
 }
 
+body.modal-open {
+  overflow: hidden;
+}
+
 html,
 body,
 body :not(input):not(textarea):not([contenteditable="true"]) {
@@ -251,6 +255,47 @@ h1, h2, h3 {
 
 .menu-search--toolbar input::placeholder {
   color: var(--muted);
+}
+
+.leaderboard-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.leaderboard-modal.hidden {
+  display: none !important;
+}
+
+.leaderboard-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.52);
+  backdrop-filter: blur(6px);
+}
+
+.leaderboard-modal__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 860px);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid var(--surface-border);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  color: var(--ink);
+}
+
+.leaderboard-modal__header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
 }
 
 .leaderboard-screen {

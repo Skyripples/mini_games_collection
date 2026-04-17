@@ -1173,13 +1173,23 @@ Object.assign(translations.en, {
 });
 
 Object.assign(translations.zh, {
-  "leaderboard.subtitle": "選擇遊戲即可查看前 10 名排行榜；有難度的遊戲會再細分。",
+  "leaderboard.subtitle": "選擇遊戲即可查看前 5 名排行榜；有難度的遊戲會再細分。",
   "leaderboard.placeholderName": "無"
 });
 
 Object.assign(translations.en, {
-  "leaderboard.subtitle": "Select a game to view its top 10 leaderboard. Games with difficulty modes are split further.",
+  "leaderboard.subtitle": "Select a game to view its top 5 leaderboard. Games with difficulty modes are split further.",
   "leaderboard.placeholderName": "N/A"
+});
+
+Object.assign(translations.zh, {
+  "leaderboard.subtitle": "選擇遊戲即可查看前 5 名排行榜；有難度的遊戲會再細分。",
+  "leaderboard.close": "關閉"
+});
+
+Object.assign(translations.en, {
+  "leaderboard.subtitle": "Select a game to view its top 5 leaderboard. Games with difficulty modes are split further.",
+  "leaderboard.close": "Close"
 });
 
 const listeners = new Set();
