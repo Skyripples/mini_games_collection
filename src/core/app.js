@@ -53,7 +53,11 @@ export function createGameHub({ menuScreen, gameScreen, backButton, entries }) {
       nextEntry.game.enter();
     }
     if (typeof nextEntry.game.refreshLocale === "function") {
-      nextEntry.game.refreshLocale();
+      try {
+        nextEntry.game.refreshLocale();
+      } catch (error) {
+        console.error("Failed to refresh active game locale:", error);
+      }
     }
   }
 
