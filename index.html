@@ -21,12 +21,31 @@
 <body>
   <div class="container">
     <div class="app-toolbar">
+      <label class="menu-search menu-search--toolbar" for="menu-search-input">
+        <span class="menu-search__label" data-i18n="menu.searchLabel">搜尋遊戲</span>
+        <input
+          id="menu-search-input"
+          type="search"
+          data-i18n-placeholder="menu.searchPlaceholder"
+          placeholder="輸入遊戲名稱關鍵字"
+        />
+      </label>
+
       <div class="app-settings">
         <label class="settings-field" for="language-select">
           <span data-i18n="settings.language">語言設定</span>
           <select id="language-select">
             <option value="zh" data-i18n="settings.language.zh">中文</option>
             <option value="en" data-i18n="settings.language.en">English</option>
+          </select>
+        </label>
+
+        <label class="settings-field" for="api-source-select">
+          <span data-i18n="settings.apiSource">排行榜來源</span>
+          <select id="api-source-select">
+            <option value="auto" data-i18n="settings.apiSource.auto">自動</option>
+            <option value="local" data-i18n="settings.apiSource.local">本機</option>
+            <option value="production" data-i18n="settings.apiSource.production">正式</option>
           </select>
         </label>
 
@@ -49,22 +68,13 @@
         </div>
 
         <div class="menu-tools">
-          <label class="menu-search" for="menu-search-input">
-            <span class="menu-search__label" data-i18n="menu.searchLabel">搜尋遊戲</span>
-            <input
-              id="menu-search-input"
-              type="search"
-              data-i18n-placeholder="menu.searchPlaceholder"
-              placeholder="輸入遊戲名稱關鍵字"
-            />
-          </label>
-
-          <div class="menu-legend">
+        <div class="menu-legend">
             <button type="button" class="menu-legend__chip menu-level-chip level-1" data-level-filter="1" data-i18n="menu.level.1" aria-pressed="false">Lv.1 入門</button>
-            <button type="button" class="menu-legend__chip menu-level-chip level-2" data-level-filter="2" data-i18n="menu.level.2" aria-pressed="false">Lv.2 基礎進階</button>
+            <button type="button" class="menu-legend__chip menu-level-chip level-2" data-level-filter="2" data-i18n="menu.level.2" aria-pressed="false">Lv.2 基礎互動</button>
             <button type="button" class="menu-legend__chip menu-level-chip level-3" data-level-filter="3" data-i18n="menu.level.3" aria-pressed="false">Lv.3 中階挑戰</button>
-            <button type="button" class="menu-legend__chip menu-level-chip level-4" data-level-filter="4" data-i18n="menu.level.4" aria-pressed="false">Lv.4 高階策略</button>
-            <button type="button" class="menu-legend__chip menu-level-chip level-5" data-level-filter="5" data-i18n="menu.level.5" aria-pressed="false">Lv.5 複雜系統</button>
+            <button type="button" class="menu-legend__chip menu-level-chip level-4" data-level-filter="4" data-i18n="menu.level.4" aria-pressed="false">Lv.4 複合系統</button>
+            <button type="button" class="menu-legend__chip menu-level-chip level-5" data-level-filter="5" data-i18n="menu.level.5" aria-pressed="false">Lv.5 大型規則</button>
+            <button id="btn-leaderboard" type="button" class="menu-legend__chip menu-legend__action" data-i18n="leaderboard.button">排行榜</button>
           </div>
         </div>
       </div>
@@ -75,6 +85,23 @@
     <div id="game-screen" class="screen">
       <div class="top-bar">
         <button id="btn-back" data-i18n="common.backToMenu">回到主選單</button>
+      </div>
+
+      <div id="leaderboard-screen" class="game-panel hidden leaderboard-screen">
+        <h2 id="leaderboard-title" data-i18n="leaderboard.title">排行榜</h2>
+        <p id="leaderboard-subtitle" class="leaderboard-subtitle" data-i18n="leaderboard.subtitle">選擇遊戲即可查看前 5 名排行榜；有難度的遊戲會再細分。</p>
+        <p id="leaderboard-context" class="leaderboard-context"></p>
+
+        <div class="leaderboard-nav">
+          <button id="leaderboard-prev" type="button" data-i18n="leaderboard.prev">上一頁</button>
+          <p id="leaderboard-page-info" class="leaderboard-page-info">第 1 頁 / 共 1 頁</p>
+          <button id="leaderboard-next" type="button" data-i18n="leaderboard.next">下一頁</button>
+        </div>
+
+        <div id="leaderboard-tabs" class="leaderboard-tabs" aria-label="排行榜遊戲分頁"></div>
+        <div id="leaderboard-difficulty-tabs" class="leaderboard-tabs leaderboard-difficulty-tabs hidden" aria-label="排行榜難度分頁"></div>
+        <p id="leaderboard-status" class="leaderboard-status" aria-live="polite">載入排行榜中...</p>
+        <ol id="leaderboard-list" class="leaderboard-list"></ol>
       </div>
 
       <div id="game-1a2b" class="game-panel hidden">
@@ -93,6 +120,23 @@
         <div class="history">
           <h3 data-i18n="common.history">猜測紀錄</h3>
           <ul id="history-list"></ul>
+        </div>
+      </div>
+
+      <div id="game-maze" class="game-panel hidden">
+        <h2 data-i18n="maze.title">迷宮</h2>
+        <p data-i18n="maze.description">在迷宮中找到出口，步數越少越好。</p>
+        <div class="input-row">
+          <button id="btn-restart-maze" data-i18n="common.restart">重新開始</button>
+        </div>
+        <p class="game-stats">
+          <span data-i18n="common.steps">步數：</span><span id="maze-steps">0</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="common.time">時間：</span><span id="maze-time">00:00</span>
+        </p>
+        <p id="maze-message">使用方向鍵或 WASD 找到出口。</p>
+        <div class="board-scroll">
+          <canvas id="maze-canvas" width="620" height="620"></canvas>
         </div>
       </div>
 
@@ -192,6 +236,11 @@
         </div>
         <p><span data-i18n="common.score">分數：</span><span id="snake-score">0</span></p>
         <p id="snake-message">按空白鍵開始，方向鍵控制移動。</p>
+        <section class="snake-leaderboard" aria-labelledby="snake-leaderboard-title">
+          <h3 id="snake-leaderboard-title" data-i18n="snake.leaderboard.title">排行榜</h3>
+          <p id="snake-leaderboard-status" class="snake-leaderboard-status" aria-live="polite" data-i18n="snake.leaderboard.loading">排行榜載入中...</p>
+          <ol id="snake-leaderboard-list" class="snake-leaderboard-list"></ol>
+        </section>
         <div class="snake-layout">
           <canvas id="snake-canvas" width="600" height="600"></canvas>
           <div class="snake-touch-controls">
@@ -223,6 +272,8 @@
           <span data-i18n="common.size">尺寸：</span><span id="minesweeper-size">16 x 16</span>
           <span class="stats-separator">|</span>
           <span data-i18n="common.mines">地雷數：</span><span id="minesweeper-mines">40</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="common.time">時間：</span><span id="minesweeper-time">0</span>
         </p>
         <div class="board-scroll">
           <div id="minesweeper-board" class="minesweeper-board"></div>
@@ -244,6 +295,7 @@
       <div id="game-breakout" class="game-panel hidden">
         <h2 data-i18n="breakout.title">打磚塊</h2>
         <div class="input-row">
+          <button id="btn-breakout-mode" class="mode-button" data-i18n="breakout.mode.classic">一般模式</button>
           <button id="btn-start-breakout" data-i18n="common.restart">重新開始</button>
         </div>
         <p class="game-stats">
@@ -294,6 +346,40 @@
         <p id="whack-message">按開始後，把冒出來的地鼠全部敲回去。</p>
         <div class="board-scroll">
           <div id="whack-board" class="whack-board"></div>
+        </div>
+      </div>
+
+      <div id="game-flappy" class="game-panel hidden">
+        <h2 data-i18n="flappy.title">Flappy Bird</h2>
+        <p data-i18n="flappy.description">按空白鍵拍動翅膀，穿過管道往前飛。</p>
+        <div class="input-row">
+          <button id="btn-restart-flappy" data-i18n="common.restart">重新開始</button>
+        </div>
+        <p class="game-stats">
+          <span data-i18n="common.score">分數：</span><span id="flappy-score">0</span>
+        </p>
+        <p id="flappy-message">按空白鍵開始，或點擊畫面起飛。</p>
+        <div class="board-scroll">
+          <canvas id="flappy-canvas" width="480" height="640"></canvas>
+        </div>
+      </div>
+
+      <div id="game-rhythm" class="game-panel hidden">
+        <h2 data-i18n="rhythm.title">節奏遊戲</h2>
+        <p data-i18n="rhythm.description">跟著節拍按下對應方向鍵，累積連擊與分數。</p>
+        <div class="input-row">
+          <button id="btn-restart-rhythm" data-i18n="common.restart">重新開始</button>
+        </div>
+        <p class="game-stats">
+          <span data-i18n="common.score">分數：</span><span id="rhythm-score">0</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="common.combo">連擊：</span><span id="rhythm-combo">0</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="common.lives">生命：</span><span id="rhythm-lives">5</span>
+        </p>
+        <p id="rhythm-message">按空白鍵開始，方向鍵對應四條軌道。</p>
+        <div class="board-scroll">
+          <canvas id="rhythm-canvas" width="520" height="640"></canvas>
         </div>
       </div>
 
@@ -474,6 +560,25 @@
               <canvas id="tetris-hold-canvas" width="140" height="140"></canvas>
             </div>
           </div>
+        </div>
+      </div>
+
+      <div id="game-roguelike" class="game-panel hidden">
+        <h2 data-i18n="roguelike.title">Roguelike</h2>
+        <p data-i18n="roguelike.description">探索隨機地城，收集寶石並擊敗怪物往出口前進。</p>
+        <div class="input-row">
+          <button id="btn-restart-roguelike" data-i18n="common.restart">重新開始</button>
+        </div>
+        <p class="game-stats">
+          <span data-i18n="common.score">分數：</span><span id="roguelike-score">0</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="common.lives">生命：</span><span id="roguelike-hp">3</span>
+          <span class="stats-separator">|</span>
+          <span data-i18n="roguelike.floor">樓層：</span><span id="roguelike-floor">1</span>
+        </p>
+        <p id="roguelike-message">前往出口，擊敗沿路敵人並收集寶石。</p>
+        <div class="board-scroll">
+          <canvas id="roguelike-canvas" width="600" height="600"></canvas>
         </div>
       </div>
 

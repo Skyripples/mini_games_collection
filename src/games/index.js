@@ -1,4 +1,5 @@
-import { t } from "../core/i18n.js";
+import { consumeTranslationContext, t } from "../core/i18n.js";
+import { promptLeaderboardPlayerName, submitLeaderboardScore } from "../core/leaderboard-submit.js";
 import { createGame1A2B } from "./game-1a2b.js";
 import { createGame2048 } from "./game-2048.js";
 import { createBreakoutGame } from "./game-breakout.js";
@@ -12,8 +13,12 @@ import { createGomokuGame } from "./game-gomoku.js";
 import { createHuarongdaoGame } from "./game-huarongdao.js";
 import { createMemoryGame } from "./game-memory.js";
 import { createMinesweeperGame } from "./game-minesweeper.js";
+import { createMazeGame } from "./game-maze.js";
+import { createFlappyGame } from "./game-flappy.js";
+import { createRhythmGame } from "./game-rhythm.js";
 import { createPacmanGame } from "./game-pacman.js";
 import { createPinballGame } from "./game-pinball.js";
+import { createRoguelikeGame } from "./game-roguelike.js";
 import { createRaidenGame } from "./game-raiden.js";
 import { createReversiGame } from "./game-reversi.js";
 import { createSlidePuzzleGame } from "./game-slide-puzzle.js";
@@ -35,6 +40,166 @@ function buildElements(getElementById, elementIds) {
   );
 }
 
+const LEADERBOARD_END_KEY_PATTERN = /(?:^|\.)((gameOver|win|clear|cleared|solved|finished|finish|draw|tie|blackWin|whiteWin|playerWin|computerWin|player1Win|player2Win|failed|hitMine|timeUp|timeout|lose|loss|complete|completed|checkmate))$/i;
+const LEADERBOARD_END_TEXT_PATTERN = /(遊戲結束|game over|恭喜|完成|清空|撞上障礙|被鬼抓到|被鬼抓到了|過關|失敗|贏了|赢了|達成 2048|沒有可以移動|沒有可移動|冒險失敗)/i;
+const LEADERBOARD_SCORE_KEY_PRIORITY = [
+  "scoreText",
+  "score",
+  "guessCountText",
+  "coinsGlobal",
+  "coins",
+  "movesText",
+  "stepsText",
+  "linesText",
+  "ballsText",
+  "hpText",
+  "livesText",
+  "hintsText",
+  "mistakesText",
+  "timeText",
+  "floorText",
+  "blackCapturesText",
+  "whiteCapturesText",
+  "blackCountText",
+  "whiteCountText"
+];
+
+function parseNumericText(value) {
+  const match = String(value === null || value === undefined ? "" : value)
+    .replace(/,/g, "")
+    .match(/-?\d+(?:\.\d+)?/);
+
+  return match ? Number(match[0]) : 0;
+}
+
+function createObservedElementProxy(element, onTextContentChange) {
+  return new Proxy(element, {
+    get(target, property, receiver) {
+      return Reflect.get(target, property, receiver);
+    },
+    set(target, property, value, receiver) {
+      const result = Reflect.set(target, property, value, receiver);
+
+      if (property === "textContent") {
+        onTextContentChange(String(value || ""));
+      }
+
+      return result;
+    }
+  });
+}
+
+function getDifficultyValueFromElements(elements) {
+  const difficultySelect = elements.difficultySelect;
+  if (!difficultySelect) {
+    return null;
+  }
+
+  const value = String(difficultySelect.value || "").trim();
+  return value ? value : null;
+}
+
+function getDifficultyLabelFromElements(elements) {
+  const difficultySelect = elements.difficultySelect;
+  if (!difficultySelect) {
+    return "";
+  }
+
+  const selectedOption = difficultySelect.selectedOptions && difficultySelect.selectedOptions[0];
+  return selectedOption ? String(selectedOption.textContent || "").trim() : "";
+}
+
+function getGameScoreFromElements(elements) {
+  for (let index = 0; index < LEADERBOARD_SCORE_KEY_PRIORITY.length; index += 1) {
+    const key = LEADERBOARD_SCORE_KEY_PRIORITY[index];
+    const element = elements[key];
+
+    if (!element) {
+      continue;
+    }
+
+    const score = parseNumericText(element.textContent);
+    if (Number.isFinite(score)) {
+      return score;
+    }
+  }
+
+  return 0;
+}
+
+function isLeaderboardGameOver(context, textContent) {
+  const key = String(context && context.key ? context.key : "");
+  if (key === "common.gameOver" || LEADERBOARD_END_KEY_PATTERN.test(key)) {
+    return true;
+  }
+
+  return LEADERBOARD_END_TEXT_PATTERN.test(String(textContent || ""));
+}
+
+function createLeaderboardSubmissionController(definition, elements) {
+  let submittedForCurrentRun = false;
+  const observedKeys = Object.keys(elements).filter(function (key) {
+    return /(?:message|status|result|turnText|prompt|scoreText|timeText|movesText|stepsText|linesText|ballsText|hpText|livesText|hintsText|mistakesText|floorText|blackCapturesText|whiteCapturesText|blackCountText|whiteCountText|comboText|levelText|speedText|timerText|mineText|sizeText|guessCountText|coinsGlobal|coins|score)$/i.test(key);
+  });
+
+  async function submitLeaderboardScoreForRun(rawTextContent) {
+    const context = consumeTranslationContext();
+    const isGameOver = isLeaderboardGameOver(context, rawTextContent);
+
+    if (!isGameOver) {
+      if (submittedForCurrentRun) {
+        submittedForCurrentRun = false;
+      }
+      return;
+    }
+
+    if (submittedForCurrentRun) {
+      return;
+    }
+
+    submittedForCurrentRun = true;
+
+    const gameTitle = t(definition.menu.titleKey);
+    const difficultyLabel = getDifficultyLabelFromElements(elements);
+    const playerName = promptLeaderboardPlayerName(gameTitle, difficultyLabel);
+    const score = getGameScoreFromElements(elements);
+    const difficultyValue = getDifficultyValueFromElements(elements);
+
+    await submitLeaderboardScore({
+      gameId: definition.id,
+      playerName: playerName,
+      score: score,
+      difficulty: difficultyValue
+    });
+  }
+
+  function wrapElements() {
+    const wrapped = { ...elements };
+
+    observedKeys.forEach(function (key) {
+      const element = wrapped[key];
+      if (!element) {
+        return;
+      }
+
+      wrapped[key] = createObservedElementProxy(element, function (textContent) {
+        void submitLeaderboardScoreForRun(textContent);
+      });
+    });
+
+    return wrapped;
+  }
+
+  function reset() {
+    submittedForCurrentRun = false;
+  }
+
+  return {
+    reset: reset,
+    wrapElements: wrapElements
+  };
+}
+
 function withLocaleFallback(game, applyFallback) {
   return {
     ...game,
@@ -49,15 +214,59 @@ function withLocaleFallback(game, applyFallback) {
 }
 
 function createGameFactory(factory, elementIds, localeFallback) {
-  return function ({ getElementById }) {
-    const game = factory(buildElements(getElementById, elementIds));
+  return function ({ getElementById, definition }) {
+    const elements = buildElements(getElementById, elementIds);
+    const leaderboardObserver = definition
+      ? createLeaderboardSubmissionController(definition, elements)
+      : null;
+    const wrappedElements = leaderboardObserver ? leaderboardObserver.wrapElements() : elements;
+    const game = factory(wrappedElements);
 
-    if (!localeFallback) {
-      return game;
+    const wrappedGame = leaderboardObserver
+      ? {
+        ...game,
+        enter: function () {
+          leaderboardObserver.reset();
+          if (typeof game.enter === "function") {
+            game.enter();
+          }
+        },
+        leave: function () {
+          if (typeof game.leave === "function") {
+            game.leave();
+          }
+        }
+      }
+      : game;
+
+    if (leaderboardObserver) {
+      Object.entries(elements).forEach(function ([key, element]) {
+        if (!element || typeof element.addEventListener !== "function") {
+          return;
+        }
+
+        if (!/(?:restart|reset|newPuzzle|newGame|playAgain|start)/i.test(key)) {
+          return;
+        }
+
+        element.addEventListener("click", function () {
+          leaderboardObserver.reset();
+        });
+      });
     }
 
-    return withLocaleFallback(game, function () {
-      getElementById(localeFallback.messageId).textContent = t(localeFallback.messageKey);
+    if (!localeFallback) {
+      return wrappedGame;
+    }
+
+    return withLocaleFallback(wrappedGame, function () {
+      const fallbackEntry = Object.entries(elementIds).find(function ([, elementId]) {
+        return elementId === localeFallback.messageId;
+      });
+      const fallbackElement = fallbackEntry
+        ? wrappedElements[fallbackEntry[0]] || getElementById(localeFallback.messageId)
+        : getElementById(localeFallback.messageId);
+      fallbackElement.textContent = t(localeFallback.messageKey);
     });
   };
 }
@@ -107,6 +316,23 @@ export const gameRegistry = [
       message: "message",
       guessCountText: "guess-count",
       historyList: "history-list"
+    })
+  }),
+  createRegistryEntry({
+    id: "maze",
+    buttonId: "btn-maze",
+    panelId: "game-maze",
+    order: 1.5,
+    level: 1,
+    titleKey: "menu.maze.title",
+    metaKey: "menu.maze.meta",
+    thumbClass: "thumb--maze",
+    createGame: createGameFactory(createMazeGame, {
+      canvas: "maze-canvas",
+      btnRestart: "btn-restart-maze",
+      stepsText: "maze-steps",
+      timeText: "maze-time",
+      message: "maze-message"
     })
   }),
   createRegistryEntry({
@@ -171,7 +397,10 @@ export const gameRegistry = [
       btnDown: "btn-snake-down",
       btnRight: "btn-snake-right",
       scoreText: "snake-score",
-      message: "snake-message"
+      message: "snake-message",
+      leaderboardTitle: "snake-leaderboard-title",
+      leaderboardStatus: "snake-leaderboard-status",
+      leaderboardList: "snake-leaderboard-list"
     })
   }),
   createRegistryEntry({
@@ -190,7 +419,8 @@ export const gameRegistry = [
       difficultySelect: "select-minesweeper-difficulty",
       difficultyLabel: "minesweeper-difficulty-label",
       sizeText: "minesweeper-size",
-      mineText: "minesweeper-mines"
+      mineText: "minesweeper-mines",
+      timerText: "minesweeper-time"
     })
   }),
   createRegistryEntry({
@@ -248,6 +478,7 @@ export const gameRegistry = [
     createGame: createGameFactory(createBreakoutGame, {
       canvas: "breakout-canvas",
       btnStart: "btn-start-breakout",
+      btnMode: "btn-breakout-mode",
       scoreText: "breakout-score",
       livesText: "breakout-lives",
       message: "breakout-message"
@@ -289,6 +520,40 @@ export const gameRegistry = [
       scoreText: "whack-score",
       timeText: "whack-time",
       message: "whack-message"
+    })
+  }),
+  createRegistryEntry({
+    id: "flappy",
+    buttonId: "btn-flappy",
+    panelId: "game-flappy",
+    order: 5.5,
+    level: 2,
+    titleKey: "menu.flappy.title",
+    metaKey: "menu.flappy.meta",
+    thumbClass: "thumb--flappy",
+    createGame: createGameFactory(createFlappyGame, {
+      canvas: "flappy-canvas",
+      btnRestart: "btn-restart-flappy",
+      scoreText: "flappy-score",
+      message: "flappy-message"
+    })
+  }),
+  createRegistryEntry({
+    id: "rhythm",
+    buttonId: "btn-rhythm",
+    panelId: "game-rhythm",
+    order: 5.6,
+    level: 2,
+    titleKey: "menu.rhythm.title",
+    metaKey: "menu.rhythm.meta",
+    thumbClass: "thumb--rhythm",
+    createGame: createGameFactory(createRhythmGame, {
+      canvas: "rhythm-canvas",
+      btnRestart: "btn-restart-rhythm",
+      scoreText: "rhythm-score",
+      comboText: "rhythm-combo",
+      livesText: "rhythm-lives",
+      message: "rhythm-message"
     })
   }),
   createRegistryEntry({
@@ -469,6 +734,24 @@ export const gameRegistry = [
       linesText: "tetris-lines",
       levelText: "tetris-level",
       message: "tetris-message"
+    })
+  }),
+  createRegistryEntry({
+    id: "roguelike",
+    buttonId: "btn-roguelike",
+    panelId: "game-roguelike",
+    order: 20.5,
+    level: 4,
+    titleKey: "menu.roguelike.title",
+    metaKey: "menu.roguelike.meta",
+    thumbClass: "thumb--roguelike",
+    createGame: createGameFactory(createRoguelikeGame, {
+      canvas: "roguelike-canvas",
+      btnRestart: "btn-restart-roguelike",
+      scoreText: "roguelike-score",
+      hpText: "roguelike-hp",
+      floorText: "roguelike-floor",
+      message: "roguelike-message"
     })
   }),
   createRegistryEntry({

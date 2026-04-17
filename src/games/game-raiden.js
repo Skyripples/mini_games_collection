@@ -1,16 +1,110 @@
 import { t } from "../core/i18n.js";
 
-const PLAYER_SPEED = 340;
+const PLAYER_SPEED_X = 340;
+const PLAYER_SPEED_Y = 280;
 const PLAYER_INVULNERABLE_MS = 700;
 const BULLET_SPEED = 560;
 const BULLET_INTERVAL_MS = 160;
+const MIN_BULLET_INTERVAL_MS = 80;
+const PLAYER_BULLET_LEVEL_MAX = 2;
+const PLAYER_BULLET_SPREAD = 12;
+const ENEMY_BULLET_SPEED = 300;
 const ENEMY_MIN_SPAWN_MS = 360;
 const ENEMY_MAX_SPAWN_MS = 760;
-const ENEMY_MIN_SPEED = 90;
-const ENEMY_MAX_SPEED = 180;
 const STAR_COUNT = 72;
 const START_HP = 3;
 const SCREEN_CLEAR_USES = 3;
+const POWER_UP_SPEED_MIN = 120;
+const POWER_UP_SPEED_MAX = 180;
+
+const POWER_UP_TYPES = {
+  heart: {
+    width: 20,
+    height: 20,
+    fillColor: "#ef4444",
+    accentColor: "#fee2e2",
+    label: "♥"
+  },
+  bomb: {
+    width: 20,
+    height: 20,
+    fillColor: "#111827",
+    accentColor: "#94a3b8",
+    label: ""
+  },
+  power: {
+    width: 22,
+    height: 22,
+    fillColor: "#2563eb",
+    accentColor: "#dbeafe",
+    label: "P"
+  },
+  speed: {
+    width: 22,
+    height: 22,
+    fillColor: "#16a34a",
+    accentColor: "#dcfce7",
+    label: "S"
+  }
+};
+
+const POWER_UP_DROP_TYPES = ["heart", "bomb", "power", "speed"];
+
+const ENEMY_TYPES = {
+  red: {
+    width: 36,
+    height: 30,
+    speedMin: 95,
+    speedMax: 165,
+    hp: 1,
+    score: 10,
+    bodyColor: "#ef4444",
+    accentColor: "#fecaca",
+    canShoot: true,
+    shootMinMs: 950,
+    shootMaxMs: 1650
+  },
+  yellow: {
+    width: 34,
+    height: 28,
+    speedMin: 190,
+    speedMax: 280,
+    hp: 1,
+    score: 12,
+    bodyColor: "#facc15",
+    accentColor: "#fef08a",
+    canShoot: false
+  },
+  green: {
+    width: 42,
+    height: 34,
+    speedMin: 80,
+    speedMax: 130,
+    hp: 3,
+    score: 24,
+    bodyColor: "#22c55e",
+    accentColor: "#bbf7d0",
+    canShoot: false
+  },
+  purple: {
+    width: 40,
+    height: 32,
+    speedMin: 92,
+    speedMax: 150,
+    hp: 2,
+    score: 30,
+    bodyColor: "#a855f7",
+    accentColor: "#f3e8ff",
+    canShoot: false
+  }
+};
+
+const ENEMY_TYPE_WEIGHTS = [
+  { type: "red", weight: 0.39 },
+  { type: "yellow", weight: 0.31 },
+  { type: "green", weight: 0.22 },
+  { type: "purple", weight: 0.08 }
+];
 
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
@@ -29,6 +123,18 @@ function overlaps(left, right) {
   );
 }
 
+function drawRoundedRectPath(context, x, y, width, height, radius) {
+  const safeRadius = Math.min(radius, width / 2, height / 2);
+
+  context.beginPath();
+  context.moveTo(x + safeRadius, y);
+  context.arcTo(x + width, y, x + width, y + height, safeRadius);
+  context.arcTo(x + width, y + height, x, y + height, safeRadius);
+  context.arcTo(x, y + height, x, y, safeRadius);
+  context.arcTo(x, y, x + width, y, safeRadius);
+  context.closePath();
+}
+
 function createStars(width, height) {
   return Array.from({ length: STAR_COUNT }, function () {
     return {
@@ -40,7 +146,23 @@ function createStars(width, height) {
   });
 }
 
-function drawPlayerShip(context, player) {
+function pickEnemyType() {
+  const totalWeight = ENEMY_TYPE_WEIGHTS.reduce(function (sum, item) {
+    return sum + item.weight;
+  }, 0);
+  let roll = Math.random() * totalWeight;
+
+  for (let index = 0; index < ENEMY_TYPE_WEIGHTS.length; index += 1) {
+    roll -= ENEMY_TYPE_WEIGHTS[index].weight;
+    if (roll <= 0) {
+      return ENEMY_TYPE_WEIGHTS[index].type;
+    }
+  }
+
+  return ENEMY_TYPE_WEIGHTS[ENEMY_TYPE_WEIGHTS.length - 1].type;
+}
+
+function drawPlayerShip(context, player, bulletLevel) {
   const noseX = player.x + player.width / 2;
   const noseY = player.y;
   const tailLeftX = player.x;
@@ -68,12 +190,20 @@ function drawPlayerShip(context, player) {
   context.fillStyle = "#f97316";
   context.fillRect(player.x + 8, player.y + player.height - 2, 6, 10);
   context.fillRect(player.x + player.width - 14, player.y + player.height - 2, 6, 10);
+
+  if (bulletLevel >= 2) {
+    context.fillStyle = "#0f172a";
+    context.fillRect(player.x + 6, player.y + 10, 6, 8);
+    context.fillRect(player.x + player.width - 12, player.y + 10, 6, 8);
+  }
+
   context.restore();
 }
 
 function drawEnemyShip(context, enemy) {
+  const typeConfig = ENEMY_TYPES[enemy.type];
   context.save();
-  context.fillStyle = "#ef4444";
+  context.fillStyle = typeConfig.bodyColor;
   context.beginPath();
   context.moveTo(enemy.x + enemy.width / 2, enemy.y + enemy.height);
   context.lineTo(enemy.x, enemy.y);
@@ -81,14 +211,46 @@ function drawEnemyShip(context, enemy) {
   context.closePath();
   context.fill();
 
-  context.fillStyle = "#fecaca";
-  context.fillRect(enemy.x + enemy.width * 0.35, enemy.y + enemy.height * 0.2, enemy.width * 0.3, enemy.height * 0.35);
+  context.fillStyle = typeConfig.accentColor;
+  context.fillRect(
+    enemy.x + enemy.width * 0.35,
+    enemy.y + enemy.height * 0.2,
+    enemy.width * 0.3,
+    enemy.height * 0.35
+  );
+
+  if (enemy.type === "red") {
+    context.fillStyle = "#7f1d1d";
+    context.fillRect(enemy.x + enemy.width / 2 - 2, enemy.y + enemy.height - 3, 4, 8);
+  }
+
+  if (enemy.maxHp > 1) {
+    const pipColor = enemy.type === "green" ? "#14532d" : "#6b21a8";
+    for (let index = 0; index < enemy.maxHp; index += 1) {
+      context.fillStyle = index < enemy.hp ? pipColor : "rgba(15, 23, 42, 0.18)";
+      context.fillRect(enemy.x + 7 + index * 8, enemy.y + 4, 5, 3);
+    }
+  }
+
   context.restore();
 }
 
 export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillText, message }) {
   const context = canvas.getContext("2d");
-  const controlKeys = new Set(["ArrowLeft", "ArrowRight", "a", "A", "d", "D"]);
+  const controlKeys = new Set([
+    "ArrowLeft",
+    "ArrowRight",
+    "ArrowUp",
+    "ArrowDown",
+    "a",
+    "A",
+    "d",
+    "D",
+    "w",
+    "W",
+    "s",
+    "S"
+  ]);
 
   let animationFrameId = null;
   let lastFrameTime = 0;
@@ -96,15 +258,21 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
   let gameState = "ready";
   let leftPressed = false;
   let rightPressed = false;
+  let upPressed = false;
+  let downPressed = false;
 
   let player = null;
   let bullets = [];
+  let enemyBullets = [];
+  let powerUps = [];
   let enemies = [];
   let stars = [];
   let score = 0;
   let hp = START_HP;
   let screenClearUses = SCREEN_CLEAR_USES;
   let fireCooldownMs = 0;
+  let fireIntervalMs = BULLET_INTERVAL_MS;
+  let bulletLevel = 1;
   let enemySpawnCooldownMs = 0;
   let playerInvulnerableMs = 0;
   let messageKey = "raiden.message.ready";
@@ -144,12 +312,16 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
 
   function resetState() {
     bullets = [];
+    enemyBullets = [];
+    powerUps = [];
     enemies = [];
     stars = createStars(canvas.width, canvas.height);
     score = 0;
     hp = START_HP;
     screenClearUses = SCREEN_CLEAR_USES;
     fireCooldownMs = 0;
+    fireIntervalMs = BULLET_INTERVAL_MS;
+    bulletLevel = 1;
     enemySpawnCooldownMs = randomRange(ENEMY_MIN_SPAWN_MS, ENEMY_MAX_SPAWN_MS);
     playerInvulnerableMs = 0;
     resetPlayer();
@@ -165,6 +337,8 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
     running = false;
     leftPressed = false;
     rightPressed = false;
+    upPressed = false;
+    downPressed = false;
     lastFrameTime = 0;
   }
 
@@ -175,24 +349,63 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
   }
 
   function spawnBullet() {
-    bullets.push({
-      x: player.x + player.width / 2 - 3,
-      y: player.y - 14,
-      width: 6,
+    const bulletOffsets = bulletLevel >= 2 ? [-PLAYER_BULLET_SPREAD, PLAYER_BULLET_SPREAD] : [0];
+
+    bulletOffsets.forEach(function (offset) {
+      bullets.push({
+        x: clamp(player.x + player.width / 2 - 3 + offset, 0, canvas.width - 6),
+        y: player.y - 14,
+        width: 6,
+        height: 14,
+        speed: BULLET_SPEED
+      });
+    });
+  }
+
+  function spawnEnemyBullet(enemy) {
+    enemyBullets.push({
+      x: enemy.x + enemy.width / 2 - 2.5,
+      y: enemy.y + enemy.height - 2,
+      width: 5,
       height: 14,
-      speed: BULLET_SPEED
+      speed: ENEMY_BULLET_SPEED
+    });
+  }
+
+  function pickPowerUpType() {
+    return POWER_UP_DROP_TYPES[Math.floor(Math.random() * POWER_UP_DROP_TYPES.length)];
+  }
+
+  function spawnPowerUp(x, y) {
+    const type = pickPowerUpType();
+    const typeConfig = POWER_UP_TYPES[type];
+
+    powerUps.push({
+      type: type,
+      x: clamp(x - typeConfig.width / 2, 0, canvas.width - typeConfig.width),
+      y: clamp(y - typeConfig.height / 2, 0, canvas.height - typeConfig.height),
+      width: typeConfig.width,
+      height: typeConfig.height,
+      speed: randomRange(POWER_UP_SPEED_MIN, POWER_UP_SPEED_MAX)
     });
   }
 
   function spawnEnemy() {
-    const width = randomRange(28, 42);
-    const height = randomRange(24, 34);
+    const enemyType = pickEnemyType();
+    const typeConfig = ENEMY_TYPES[enemyType];
+
     enemies.push({
-      x: randomRange(0, canvas.width - width),
-      y: -height - 6,
-      width: width,
-      height: height,
-      speed: randomRange(ENEMY_MIN_SPEED, ENEMY_MAX_SPEED)
+      type: enemyType,
+      x: randomRange(0, canvas.width - typeConfig.width),
+      y: -typeConfig.height - 6,
+      width: typeConfig.width,
+      height: typeConfig.height,
+      speed: randomRange(typeConfig.speedMin, typeConfig.speedMax),
+      hp: typeConfig.hp,
+      maxHp: typeConfig.hp,
+      shootCooldownMs: typeConfig.canShoot
+        ? randomRange(typeConfig.shootMinMs, typeConfig.shootMaxMs)
+        : 0
     });
   }
 
@@ -211,10 +424,16 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
   function updatePlayer(deltaMs) {
     const deltaSeconds = deltaMs / 1000;
     const horizontal = (rightPressed ? 1 : 0) - (leftPressed ? 1 : 0);
+    const vertical = (downPressed ? 1 : 0) - (upPressed ? 1 : 0);
 
     if (horizontal !== 0) {
-      player.x += horizontal * PLAYER_SPEED * deltaSeconds;
+      player.x += horizontal * PLAYER_SPEED_X * deltaSeconds;
       player.x = clamp(player.x, 0, canvas.width - player.width);
+    }
+
+    if (vertical !== 0) {
+      player.y += vertical * PLAYER_SPEED_Y * deltaSeconds;
+      player.y = clamp(player.y, 0, canvas.height - player.height);
     }
   }
 
@@ -224,6 +443,24 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
     bullets = bullets.filter(function (bullet) {
       bullet.y -= bullet.speed * deltaSeconds;
       return bullet.y + bullet.height >= 0;
+    });
+  }
+
+  function updateEnemyBullets(deltaMs) {
+    const deltaSeconds = deltaMs / 1000;
+
+    enemyBullets = enemyBullets.filter(function (bullet) {
+      bullet.y += bullet.speed * deltaSeconds;
+      return bullet.y <= canvas.height + bullet.height;
+    });
+  }
+
+  function updatePowerUps(deltaMs) {
+    const deltaSeconds = deltaMs / 1000;
+
+    powerUps = powerUps.filter(function (powerUp) {
+      powerUp.y += powerUp.speed * deltaSeconds;
+      return powerUp.y <= canvas.height + powerUp.height;
     });
   }
 
@@ -240,7 +477,7 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
     fireCooldownMs -= deltaMs;
     while (fireCooldownMs <= 0) {
       spawnBullet();
-      fireCooldownMs += BULLET_INTERVAL_MS;
+      fireCooldownMs += fireIntervalMs;
     }
   }
 
@@ -252,26 +489,87 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
     }
   }
 
+  function handleEnemyFire(deltaMs) {
+    enemies.forEach(function (enemy) {
+      const typeConfig = ENEMY_TYPES[enemy.type];
+      if (!typeConfig.canShoot) {
+        return;
+      }
+      if (enemy.y + enemy.height < 0) {
+        return;
+      }
+
+      enemy.shootCooldownMs -= deltaMs;
+      while (enemy.shootCooldownMs <= 0) {
+        spawnEnemyBullet(enemy);
+        enemy.shootCooldownMs += randomRange(typeConfig.shootMinMs, typeConfig.shootMaxMs);
+      }
+    });
+  }
+
   function handleBulletEnemyCollisions() {
     for (let bulletIndex = bullets.length - 1; bulletIndex >= 0; bulletIndex -= 1) {
       const bullet = bullets[bulletIndex];
       let hitEnemyIndex = -1;
 
       for (let enemyIndex = enemies.length - 1; enemyIndex >= 0; enemyIndex -= 1) {
-        const enemy = enemies[enemyIndex];
-
-        if (overlaps(bullet, enemy)) {
+        if (overlaps(bullet, enemies[enemyIndex])) {
           hitEnemyIndex = enemyIndex;
           break;
         }
       }
 
-      if (hitEnemyIndex !== -1) {
-        bullets.splice(bulletIndex, 1);
+      if (hitEnemyIndex === -1) {
+        continue;
+      }
+
+      bullets.splice(bulletIndex, 1);
+      const enemy = enemies[hitEnemyIndex];
+      enemy.hp -= 1;
+
+      if (enemy.hp <= 0) {
+        const typeConfig = ENEMY_TYPES[enemy.type];
+        if (enemy.type === "purple") {
+          spawnPowerUp(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2);
+        }
         enemies.splice(hitEnemyIndex, 1);
-        score += 10;
+        score += typeConfig.score;
         updateHud();
       }
+    }
+  }
+
+  function applyPowerUp(powerUp) {
+    switch (powerUp.type) {
+      case "heart":
+        hp += 1;
+        updateHud();
+        return;
+      case "bomb":
+        screenClearUses += 1;
+        updateHud();
+        return;
+      case "power":
+        bulletLevel = Math.min(PLAYER_BULLET_LEVEL_MAX, bulletLevel + 1);
+        return;
+      case "speed":
+        fireIntervalMs = Math.max(MIN_BULLET_INTERVAL_MS, Math.round(fireIntervalMs * 0.82));
+        fireCooldownMs = Math.min(fireCooldownMs, fireIntervalMs);
+        return;
+      default:
+        return;
+    }
+  }
+
+  function handlePowerUpCollisions() {
+    for (let index = powerUps.length - 1; index >= 0; index -= 1) {
+      const powerUp = powerUps[index];
+      if (!overlaps(player, powerUp)) {
+        continue;
+      }
+
+      powerUps.splice(index, 1);
+      applyPowerUp(powerUp);
     }
   }
 
@@ -279,6 +577,20 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
     stop();
     gameState = "gameOver";
     setMessage("raiden.message.gameOver", { score: score });
+  }
+
+  function damagePlayer() {
+    if (playerInvulnerableMs > 0) {
+      return;
+    }
+
+    hp -= 1;
+    playerInvulnerableMs = PLAYER_INVULNERABLE_MS;
+    updateHud();
+
+    if (hp <= 0) {
+      endGame();
+    }
   }
 
   function useScreenClear() {
@@ -293,8 +605,13 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
 
     const destroyed = enemies.length;
     if (destroyed > 0) {
-      score += destroyed * 10;
+      const gainedScore = enemies.reduce(function (sum, enemy) {
+        return sum + ENEMY_TYPES[enemy.type].score;
+      }, 0);
+
+      score += gainedScore;
       enemies = [];
+      updateHud();
     }
 
     screenClearUses -= 1;
@@ -315,20 +632,60 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
       }
 
       enemies.splice(enemyIndex, 1);
-
-      if (playerInvulnerableMs > 0) {
-        continue;
-      }
-
-      hp -= 1;
-      playerInvulnerableMs = PLAYER_INVULNERABLE_MS;
-      updateHud();
-
-      if (hp <= 0) {
-        endGame();
+      damagePlayer();
+      if (!running) {
         return;
       }
     }
+  }
+
+  function handlePlayerEnemyBulletCollisions() {
+    for (let bulletIndex = enemyBullets.length - 1; bulletIndex >= 0; bulletIndex -= 1) {
+      const bullet = enemyBullets[bulletIndex];
+      if (!overlaps(player, bullet)) {
+        continue;
+      }
+
+      enemyBullets.splice(bulletIndex, 1);
+      damagePlayer();
+      if (!running) {
+        return;
+      }
+    }
+  }
+
+  function drawPowerUp(context, powerUp) {
+    const typeConfig = POWER_UP_TYPES[powerUp.type];
+
+    context.save();
+    context.translate(powerUp.x, powerUp.y);
+    context.fillStyle = typeConfig.fillColor;
+    context.strokeStyle = "rgba(15, 23, 42, 0.38)";
+    context.lineWidth = 2;
+    drawRoundedRectPath(context, 0, 0, powerUp.width, powerUp.height, 6);
+    context.fill();
+    context.stroke();
+
+    if (powerUp.type === "bomb") {
+      context.fillStyle = "#111827";
+      context.beginPath();
+      context.arc(powerUp.width / 2, powerUp.height / 2 + 1, 6, 0, Math.PI * 2);
+      context.fill();
+      context.fillStyle = typeConfig.accentColor;
+      context.fillRect(powerUp.width / 2 - 1.5, 1, 3, 4);
+      context.fillStyle = "#f97316";
+      context.beginPath();
+      context.arc(powerUp.width / 2 + 4, 4, 2, 0, Math.PI * 2);
+      context.fill();
+    } else {
+      context.fillStyle = typeConfig.accentColor;
+      context.font = `900 ${powerUp.type === "heart" ? 16 : 14}px "Trebuchet MS", "Microsoft JhengHei", sans-serif`;
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText(typeConfig.label, powerUp.width / 2, powerUp.height / 2 + 1);
+    }
+
+    context.restore();
   }
 
   function update(deltaMs) {
@@ -340,10 +697,18 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
     updatePlayer(deltaMs);
     handleAutoFire(deltaMs);
     handleEnemySpawn(deltaMs);
+    handleEnemyFire(deltaMs);
     updateBullets(deltaMs);
+    updateEnemyBullets(deltaMs);
+    updatePowerUps(deltaMs);
     updateEnemies(deltaMs);
     handleBulletEnemyCollisions();
     handlePlayerEnemyCollisions();
+    if (!running) {
+      return;
+    }
+    handlePlayerEnemyBulletCollisions();
+    handlePowerUpCollisions();
   }
 
   function drawBackground() {
@@ -369,11 +734,22 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
     bullets.forEach(function (bullet) {
       context.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
     });
+
+    context.fillStyle = "#fb7185";
+    enemyBullets.forEach(function (bullet) {
+      context.fillRect(bullet.x, bullet.y, bullet.width, bullet.height);
+    });
   }
 
   function drawEnemies() {
     enemies.forEach(function (enemy) {
       drawEnemyShip(context, enemy);
+    });
+  }
+
+  function drawPowerUps() {
+    powerUps.forEach(function (powerUp) {
+      drawPowerUp(context, powerUp);
     });
   }
 
@@ -386,7 +762,7 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
       return;
     }
 
-    drawPlayerShip(context, player);
+    drawPlayerShip(context, player, bulletLevel);
   }
 
   function drawGameOverOverlay() {
@@ -418,6 +794,7 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
     drawBackground();
     drawBullets();
     drawEnemies();
+    drawPowerUps();
     drawPlayer();
     drawGameOverOverlay();
   }
@@ -488,6 +865,30 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
     canvas.focus({ preventScroll: true });
   }
 
+  function setDirectionKey(key, value) {
+    if (key === "ArrowLeft" || key === "a" || key === "A") {
+      leftPressed = value;
+      return true;
+    }
+
+    if (key === "ArrowRight" || key === "d" || key === "D") {
+      rightPressed = value;
+      return true;
+    }
+
+    if (key === "ArrowUp" || key === "w" || key === "W") {
+      upPressed = value;
+      return true;
+    }
+
+    if (key === "ArrowDown" || key === "s" || key === "S") {
+      downPressed = value;
+      return true;
+    }
+
+    return false;
+  }
+
   function handleKeyDown(event) {
     if (event.code === "Space") {
       if (event.repeat) {
@@ -525,17 +926,11 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
     }
 
     event.preventDefault();
-
     if (!running) {
       return;
     }
 
-    if (event.key === "ArrowLeft" || event.key === "a" || event.key === "A") {
-      leftPressed = true;
-      return;
-    }
-
-    rightPressed = true;
+    setDirectionKey(event.key, true);
   }
 
   function handleKeyUp(event) {
@@ -543,12 +938,7 @@ export function createRaidenGame({ canvas, btnRestart, scoreText, hpText, skillT
       return;
     }
 
-    if (event.key === "ArrowLeft" || event.key === "a" || event.key === "A") {
-      leftPressed = false;
-      return;
-    }
-
-    rightPressed = false;
+    setDirectionKey(event.key, false);
   }
 
   resetState();

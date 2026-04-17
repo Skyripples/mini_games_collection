@@ -7,7 +7,8 @@ export function createMinesweeperGame({
   difficultySelect,
   difficultyLabel,
   sizeText,
-  mineText
+  mineText,
+  timerText
 }) {
   const difficultySettings = {
     easy: {
@@ -38,6 +39,8 @@ export function createMinesweeperGame({
   let boardReady = false;
   let currentDifficulty = difficultySelect.value in difficultySettings ? difficultySelect.value : "normal";
   let messageKey = "minesweeper.message.start";
+  let elapsedSeconds = 0;
+  let timerIntervalId = null;
 
   function getSettings() {
     return difficultySettings[currentDifficulty];
@@ -46,6 +49,36 @@ export function createMinesweeperGame({
   function setMessage(key) {
     messageKey = key;
     message.textContent = t(key);
+  }
+
+  function updateTimerText() {
+    if (!timerText) {
+      return;
+    }
+
+    const minutes = String(Math.floor(elapsedSeconds / 60)).padStart(2, "0");
+    const seconds = String(elapsedSeconds % 60).padStart(2, "0");
+    timerText.textContent = `${minutes}:${seconds}`;
+  }
+
+  function stopTimer() {
+    if (!timerIntervalId) {
+      return;
+    }
+
+    window.clearInterval(timerIntervalId);
+    timerIntervalId = null;
+  }
+
+  function startTimerIfNeeded() {
+    if (timerIntervalId) {
+      return;
+    }
+
+    timerIntervalId = window.setInterval(function () {
+      elapsedSeconds += 1;
+      updateTimerText();
+    }, 1000);
   }
 
   function applyDifficulty() {
@@ -162,6 +195,7 @@ export function createMinesweeperGame({
     placeMines(row, col);
     countAdjacentMines();
     boardReady = true;
+    startTimerIfNeeded();
   }
 
   function revealRegion(startRow, startCol) {
@@ -225,6 +259,7 @@ export function createMinesweeperGame({
       cell.revealed = true;
       revealAllMines();
       gameOver = true;
+      stopTimer();
       setMessage("minesweeper.message.hitMine");
       render();
       return;
@@ -234,6 +269,7 @@ export function createMinesweeperGame({
 
     if (checkWin()) {
       gameOver = true;
+      stopTimer();
       setMessage("minesweeper.message.win");
     }
 
@@ -297,9 +333,12 @@ export function createMinesweeperGame({
   }
 
   function reset() {
+    stopTimer();
     gameOver = false;
     boardReady = false;
+    elapsedSeconds = 0;
     setMessage("minesweeper.message.start");
+    updateTimerText();
     applyDifficulty();
     createEmptyBoard();
     render();
@@ -318,6 +357,11 @@ export function createMinesweeperGame({
 
   return {
     enter: reset,
+    leave: function () {
+      stopTimer();
+      gameOver = false;
+      boardReady = false;
+    },
     refreshLocale: function () {
       applyDifficulty();
       message.textContent = t(messageKey);

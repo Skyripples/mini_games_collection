@@ -1,35 +1,19 @@
 import { t } from "../core/i18n.js";
 
-const LEVELS = [
-  [
-    ["red", "blue", "blue", "red"],
-    ["yellow", "red", "yellow", "blue"],
-    ["blue", "yellow", "red", "yellow"],
-    [],
-    []
-  ],
-  [
-    ["green", "red", "blue", "green"],
-    ["yellow", "green", "yellow", "red"],
-    ["blue", "yellow", "red", "blue"],
-    ["green", "blue", "red", "yellow"],
-    [],
-    []
-  ],
-  [
-    ["purple", "green", "blue", "purple"],
-    ["red", "yellow", "red", "green"],
-    ["blue", "purple", "yellow", "blue"],
-    ["green", "red", "purple", "yellow"],
-    [],
-    []
-  ]
+const TUBE_CAPACITY = 4;
+const SEGMENT_HEIGHT = 30;
+const SEGMENT_BOTTOM_OFFSET = 8;
+const DEFAULT_SHUFFLE_STEPS = 100;
+const COLOR_POOL = ["red", "blue", "yellow", "green", "purple"];
+
+const LEVEL_CONFIGS = [
+  { colorCount: 3, shuffleSteps: 100 },
+  { colorCount: 4, shuffleSteps: 100 },
+  { colorCount: 5, shuffleSteps: 100 }
 ];
 
-const TUBE_CAPACITY = 4;
-
-function cloneLevel(level) {
-  return level.map(function (tube) {
+function cloneBoard(board) {
+  return board.map(function (tube) {
     return tube.slice();
   });
 }
@@ -87,21 +71,137 @@ function canPour(fromTube, toTube) {
   return fromColor === toColor;
 }
 
-function pourLiquid(fromTube, toTube) {
+function pourLiquid(fromTube, toTube, options = {}) {
   if (!canPour(fromTube, toTube)) {
-    return false;
+    return 0;
   }
 
-  const fromColor = fromTube[fromTube.length - 1];
   const movableCount = getTopColorBlockCount(fromTube);
   const availableSpace = TUBE_CAPACITY - toTube.length;
-  const amount = Math.min(movableCount, availableSpace);
+  const maxAmount = Math.min(movableCount, availableSpace);
+  const amount = options.randomizeAmount
+    ? Math.max(1, Math.floor(Math.random() * maxAmount) + 1)
+    : maxAmount;
 
   for (let count = 0; count < amount; count += 1) {
     toTube.push(fromTube.pop());
   }
 
-  return amount > 0;
+  return amount;
+}
+
+function collectLegalMoves(board) {
+  const moves = [];
+
+  board.forEach(function (fromTube, fromIndex) {
+    board.forEach(function (toTube, toIndex) {
+      if (fromIndex === toIndex) {
+        return;
+      }
+
+      if (canPour(fromTube, toTube)) {
+        moves.push({ fromIndex: fromIndex, toIndex: toIndex });
+      }
+    });
+  });
+
+  return moves;
+}
+
+function createSolvedBoard(colorCount) {
+  const colors = COLOR_POOL.slice(0, colorCount);
+  const board = colors.map(function (color) {
+    return Array(TUBE_CAPACITY).fill(color);
+  });
+
+  board.push([]);
+  board.push([]);
+  return board;
+}
+
+function createFallbackBoard(colorCount) {
+  const colors = COLOR_POOL.slice(0, colorCount);
+  const units = [];
+
+  colors.forEach(function (color) {
+    for (let count = 0; count < TUBE_CAPACITY; count += 1) {
+      units.push(color);
+    }
+  });
+
+  for (let index = units.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [units[index], units[swapIndex]] = [units[swapIndex], units[index]];
+  }
+
+  const board = Array.from({ length: colorCount }, function () {
+    return [];
+  });
+
+  units.forEach(function (color, index) {
+    const tubeIndex = Math.floor(index / TUBE_CAPACITY);
+    board[tubeIndex].push(color);
+  });
+
+  board.push([]);
+  board.push([]);
+  return board;
+}
+
+function generateShuffledBoard(colorCount, shuffleSteps = DEFAULT_SHUFFLE_STEPS) {
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    const board = createSolvedBoard(colorCount);
+    let previousMove = null;
+    let effectiveSteps = 0;
+
+    for (let step = 0; step < shuffleSteps; step += 1) {
+      const legalMoves = collectLegalMoves(board);
+      if (legalMoves.length === 0) {
+        break;
+      }
+
+      let candidates = legalMoves;
+      if (previousMove) {
+        const filtered = legalMoves.filter(function (move) {
+          return !(
+            move.fromIndex === previousMove.toIndex &&
+            move.toIndex === previousMove.fromIndex
+          );
+        });
+
+        if (filtered.length > 0) {
+          candidates = filtered;
+        }
+      }
+
+      const selectedMove = candidates[Math.floor(Math.random() * candidates.length)];
+      const pouredAmount = pourLiquid(
+        board[selectedMove.fromIndex],
+        board[selectedMove.toIndex],
+        { randomizeAmount: true }
+      );
+
+      if (pouredAmount > 0) {
+        effectiveSteps += 1;
+        previousMove = selectedMove;
+      }
+    }
+
+    if (effectiveSteps > 0 && !isSolved(board)) {
+      return board;
+    }
+  }
+
+  return createFallbackBoard(colorCount);
+}
+
+function createBoardForLevel(levelIndex) {
+  const levelConfig = LEVEL_CONFIGS[levelIndex];
+  const shuffleSteps =
+    typeof levelConfig.shuffleSteps === "number"
+      ? levelConfig.shuffleSteps
+      : DEFAULT_SHUFFLE_STEPS;
+  return generateShuffledBoard(levelConfig.colorCount, shuffleSteps);
 }
 
 export function createWaterSortGame({
@@ -113,7 +213,8 @@ export function createWaterSortGame({
   message
 }) {
   let levelIndex = 0;
-  let board = cloneLevel(LEVELS[levelIndex]);
+  let initialBoard = createBoardForLevel(levelIndex);
+  let board = cloneBoard(initialBoard);
   let selectedTubeIndex = null;
   let gameWon = false;
   let messageState = "waterSort.message.start";
@@ -128,15 +229,15 @@ export function createWaterSortGame({
   }
 
   function updateHeader() {
-    levelText.textContent = `${levelIndex + 1} / ${LEVELS.length}`;
+    levelText.textContent = `${levelIndex + 1} / ${LEVEL_CONFIGS.length}`;
     btnPrev.disabled = levelIndex === 0;
-    btnNext.disabled = levelIndex === LEVELS.length - 1;
+    btnNext.disabled = levelIndex === LEVEL_CONFIGS.length - 1;
   }
 
   function createLiquidSegment(color, depthFromBottom) {
     const segment = document.createElement("div");
     segment.className = `water-sort-segment color-${color}`;
-    segment.style.bottom = `${depthFromBottom * 24 + 6}px`;
+    segment.style.bottom = `${depthFromBottom * SEGMENT_HEIGHT + SEGMENT_BOTTOM_OFFSET}px`;
     return segment;
   }
 
@@ -178,7 +279,7 @@ export function createWaterSortGame({
   }
 
   function resetLevel() {
-    board = cloneLevel(LEVELS[levelIndex]);
+    board = cloneBoard(initialBoard);
     selectedTubeIndex = null;
     gameWon = false;
     renderBoard();
@@ -187,6 +288,7 @@ export function createWaterSortGame({
 
   function goToLevel(nextIndex) {
     levelIndex = nextIndex;
+    initialBoard = createBoardForLevel(levelIndex);
     resetLevel();
   }
 
@@ -215,7 +317,8 @@ export function createWaterSortGame({
 
     const fromTube = board[selectedTubeIndex];
     const toTube = board[tubeIndex];
-    const poured = pourLiquid(fromTube, toTube);
+    const pouredAmount = pourLiquid(fromTube, toTube);
+    const poured = pouredAmount > 0;
 
     selectedTubeIndex = null;
 
@@ -255,7 +358,7 @@ export function createWaterSortGame({
   });
 
   btnNext.addEventListener("click", function () {
-    if (levelIndex < LEVELS.length - 1) {
+    if (levelIndex < LEVEL_CONFIGS.length - 1) {
       goToLevel(levelIndex + 1);
     }
   });
