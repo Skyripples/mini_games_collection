@@ -212,7 +212,11 @@ const app = createGameHub({
 function refreshGameLocales() {
   games.forEach(function (game) {
     if (typeof game.refreshLocale === "function") {
-      game.refreshLocale();
+      try {
+        game.refreshLocale();
+      } catch (error) {
+        console.error("Failed to refresh game locale:", error);
+      }
     }
   });
 }

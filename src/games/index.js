@@ -78,7 +78,7 @@ function createObservedElementProxy(element, onTextContentChange) {
       return Reflect.get(target, property, receiver);
     },
     set(target, property, value, receiver) {
-      const result = Reflect.set(target, property, value, receiver);
+      const result = Reflect.set(target, property, value);
 
       if (property === "textContent") {
         onTextContentChange(String(value || ""));
