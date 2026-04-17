@@ -1,4 +1,4 @@
-import { getLeaderboardApiUrl } from "./api.js";
+import { getLeaderboardApiCandidates } from "./api.js";
 import { t } from "./i18n.js";
 
 function normalizePlayerName(value) {
@@ -38,21 +38,36 @@ export async function submitLeaderboardScore({
       throw new Error("fetch is not available");
     }
 
-    const response = await fetch(getLeaderboardApiUrl(), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        gameId: String(gameId || "").trim(),
-        playerName: normalizePlayerName(playerName),
-        score: normalizeScore(score),
-        difficulty: normalizeDifficulty(difficulty)
-      })
+    const requestBody = JSON.stringify({
+      gameId: String(gameId || "").trim(),
+      playerName: normalizePlayerName(playerName),
+      score: normalizeScore(score),
+      difficulty: normalizeDifficulty(difficulty)
     });
+    let lastError = null;
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+    for (const apiUrl of getLeaderboardApiCandidates()) {
+      try {
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: requestBody
+        });
+
+        if (response.ok) {
+          return;
+        }
+
+        lastError = new Error(`HTTP ${response.status}`);
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    if (lastError) {
+      throw lastError;
     }
   } catch (error) {
     console.error("Failed to submit leaderboard score:", error);

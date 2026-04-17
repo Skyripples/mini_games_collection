@@ -1172,6 +1172,16 @@ Object.assign(translations.en, {
   "leaderboard.failed": "Failed to load leaderboard."
 });
 
+Object.assign(translations.zh, {
+  "leaderboard.subtitle": "選擇遊戲即可查看前 10 名排行榜；有難度的遊戲會再細分。",
+  "leaderboard.placeholderName": "無"
+});
+
+Object.assign(translations.en, {
+  "leaderboard.subtitle": "Select a game to view its top 10 leaderboard. Games with difficulty modes are split further.",
+  "leaderboard.placeholderName": "N/A"
+});
+
 const listeners = new Set();
 let lastTranslationContext = null;
 

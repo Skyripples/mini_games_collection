@@ -48,6 +48,17 @@ export function getLeaderboardApiUrl() {
     : PRODUCTION_LEADERBOARD_API_URL;
 }
 
+export function getLeaderboardApiCandidates() {
+  const primaryUrl = getLeaderboardApiUrl();
+  const fallbackUrl = primaryUrl === LOCAL_LEADERBOARD_API_URL
+    ? PRODUCTION_LEADERBOARD_API_URL
+    : LOCAL_LEADERBOARD_API_URL;
+
+  return primaryUrl === fallbackUrl
+    ? [primaryUrl]
+    : [primaryUrl, fallbackUrl];
+}
+
 export function getLeaderboardApiMode() {
   return currentMode;
 }

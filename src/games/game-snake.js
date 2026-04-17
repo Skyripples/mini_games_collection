@@ -1,4 +1,4 @@
-import { getLeaderboardApiUrl, onLeaderboardApiModeChange } from "../core/api.js";
+import { getLeaderboardApiCandidates, onLeaderboardApiModeChange } from "../core/api.js";
 import { t } from "../core/i18n.js";
 
 const BASE_STEP_MS = 140;
@@ -109,27 +109,49 @@ export function createSnakeGame({
   }
 
   function getLeaderboardName(item) {
+    if (item && item.__placeholder) {
+      return t("leaderboard.placeholderName");
+    }
+
     if (item && item.player_name !== undefined && item.player_name !== null) {
-      return String(item.player_name);
+      const name = String(item.player_name).trim();
+      return name ? name : t("leaderboard.placeholderName");
     }
 
     if (item && item.playerName !== undefined && item.playerName !== null) {
-      return String(item.playerName);
+      const name = String(item.playerName).trim();
+      return name ? name : t("leaderboard.placeholderName");
     }
 
     if (item && item.name !== undefined && item.name !== null) {
-      return String(item.name);
+      const name = String(item.name).trim();
+      return name ? name : t("leaderboard.placeholderName");
     }
 
-    return "Unknown";
+    return t("leaderboard.placeholderName");
   }
 
   function getLeaderboardScore(item) {
-    if (item && item.score !== undefined && item.score !== null) {
-      return String(item.score);
+    const score = Number(item && item.score);
+    return Number.isFinite(score) ? String(score) : "0";
+  }
+
+  function createPlaceholderLeaderboardItem() {
+    return {
+      __placeholder: true,
+      player_name: "",
+      score: 0
+    };
+  }
+
+  function buildLeaderboardDisplayItems(items) {
+    const displayItems = Array.isArray(items) ? items.slice(0, LEADERBOARD_LIMIT) : [];
+
+    while (displayItems.length < LEADERBOARD_LIMIT) {
+      displayItems.push(createPlaceholderLeaderboardItem());
     }
 
-    return "0";
+    return displayItems;
   }
 
   function setLeaderboardStatus(key, params) {
@@ -156,7 +178,7 @@ export function createSnakeGame({
       return;
     }
 
-    const entries = Array.isArray(items) ? items.slice(0, LEADERBOARD_LIMIT) : [];
+    const entries = buildLeaderboardDisplayItems(items);
     leaderboardList.innerHTML = "";
 
     entries.forEach(function (item, index) {
@@ -196,13 +218,28 @@ export function createSnakeGame({
         throw new Error("fetch is not available");
       }
 
-      const response = await fetch(`${getLeaderboardApiUrl()}?gameId=snake&limit=${LEADERBOARD_LIMIT}`);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      let lastError = null;
+      let payload = [];
+
+      for (const apiUrl of getLeaderboardApiCandidates()) {
+        try {
+          const response = await fetch(`${apiUrl}?gameId=snake&limit=${LEADERBOARD_LIMIT}`);
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+          }
+
+          const text = await response.text();
+          payload = text ? JSON.parse(text) : [];
+          lastError = null;
+          break;
+        } catch (error) {
+          lastError = error;
+        }
       }
 
-      const text = await response.text();
-      const payload = text ? JSON.parse(text) : [];
+      if (lastError) {
+        throw lastError;
+      }
 
       if (requestId !== leaderboardRequestId) {
         return;
@@ -210,12 +247,7 @@ export function createSnakeGame({
 
       const items = normalizeLeaderboardItems(payload);
       renderLeaderboard(items);
-
-      if (items.length === 0) {
-        setLeaderboardStatus("snake.leaderboard.empty");
-      } else {
-        setLeaderboardStatus("");
-      }
+      setLeaderboardStatus("");
     } catch (error) {
       if (requestId !== leaderboardRequestId) {
         return;
@@ -239,20 +271,35 @@ export function createSnakeGame({
         throw new Error("fetch is not available");
       }
 
-      const response = await fetch(getLeaderboardApiUrl(), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          gameId: "snake",
-          playerName: "Master",
-          score
-        })
+      const requestBody = JSON.stringify({
+        gameId: "snake",
+        playerName: "Master",
+        score
       });
+      let lastError = null;
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      for (const apiUrl of getLeaderboardApiCandidates()) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: requestBody
+          });
+
+          if (response.ok) {
+            return;
+          }
+
+          lastError = new Error(`HTTP ${response.status}`);
+        } catch (error) {
+          lastError = error;
+        }
+      }
+
+      if (lastError) {
+        throw lastError;
       }
     } catch (error) {
       console.error("Failed to submit snake score:", error);

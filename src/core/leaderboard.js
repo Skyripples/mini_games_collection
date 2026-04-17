@@ -1,6 +1,6 @@
-import { getLeaderboardApiUrl, onLeaderboardApiModeChange } from "./api.js";
+import { getLeaderboardApiCandidates, onLeaderboardApiModeChange } from "./api.js";
 import { t } from "./i18n.js";
-const LEADERBOARD_LIMIT = 5;
+const LEADERBOARD_LIMIT = 10;
 const LEADERBOARD_PAGE_SIZE = 6;
 
 const DIFFICULTY_LABEL_KEYS = {
@@ -40,6 +40,10 @@ function normalizeLeaderboardItems(payload) {
 }
 
 function getLeaderboardName(item) {
+  if (item && item.__placeholder) {
+    return t("leaderboard.placeholderName");
+  }
+
   let rawName = null;
 
   if (item && item.player_name !== undefined && item.player_name !== null) {
@@ -51,7 +55,7 @@ function getLeaderboardName(item) {
   }
 
   const name = String(rawName === null || rawName === undefined ? "" : rawName).trim();
-  return name ? name : "N/A";
+  return name ? name : t("leaderboard.placeholderName");
 }
 
 function getLeaderboardScore(item) {
@@ -62,6 +66,24 @@ function getLeaderboardScore(item) {
 function getScoreValue(item) {
   const score = Number(item && item.score);
   return Number.isFinite(score) ? score : 0;
+}
+
+function createPlaceholderLeaderboardItem() {
+  return {
+    __placeholder: true,
+    player_name: "",
+    score: 0
+  };
+}
+
+function buildLeaderboardDisplayItems(items) {
+  const displayItems = Array.isArray(items) ? items.slice(0, LEADERBOARD_LIMIT) : [];
+
+  while (displayItems.length < LEADERBOARD_LIMIT) {
+    displayItems.push(createPlaceholderLeaderboardItem());
+  }
+
+  return displayItems;
 }
 
 function normalizeDifficultyValue(value) {
@@ -395,7 +417,7 @@ export function createLeaderboardBrowser({
   }
 
   function renderList(items) {
-    currentItems = Array.isArray(items) ? items.slice(0, LEADERBOARD_LIMIT) : [];
+    currentItems = buildLeaderboardDisplayItems(items);
 
     if (!listElement) {
       return;
@@ -422,6 +444,27 @@ export function createLeaderboardBrowser({
       li.append(rank, name, score);
       listElement.appendChild(li);
     });
+  }
+
+  async function fetchLeaderboardItems(queryString) {
+    let lastError = null;
+
+    for (const apiUrl of getLeaderboardApiCandidates()) {
+      try {
+        const response = await fetch(`${apiUrl}?${queryString}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const text = await response.text();
+        return text ? JSON.parse(text) : [];
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error("Failed to load leaderboard");
   }
 
   function setStatus(key, params) {
@@ -462,14 +505,7 @@ export function createLeaderboardBrowser({
         query.set("difficulty", difficultyValue);
       }
 
-      const response = await fetch(`${getLeaderboardApiUrl()}?${query.toString()}`);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      const text = await response.text();
-      const payload = text ? JSON.parse(text) : [];
+      const payload = await fetchLeaderboardItems(query.toString());
 
       if (currentRequestId !== requestId) {
         return;
@@ -483,12 +519,7 @@ export function createLeaderboardBrowser({
       const filteredItems = filterLeaderboardItemsByDifficulty(items, game, difficultyValue);
 
       renderList(filteredItems);
-
-      if (filteredItems.length === 0) {
-        setStatus("leaderboard.empty");
-      } else {
-        setStatus("");
-      }
+      setStatus("");
     } catch (error) {
       if (currentRequestId !== requestId) {
         return;
