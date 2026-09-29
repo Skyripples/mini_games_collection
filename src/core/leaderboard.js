@@ -262,7 +262,7 @@ export function createLeaderboardBrowser({
 }) {
   const sortedGames = games
     .filter(function (definition) {
-      return definition && !definition.hidden;
+      return definition && !definition.hidden && definition.leaderboard !== false;
     })
     .slice()
     .sort(function (left, right) {

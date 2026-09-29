@@ -216,7 +216,7 @@ function withLocaleFallback(game, applyFallback) {
 function createGameFactory(factory, elementIds, localeFallback) {
   return function ({ getElementById, definition }) {
     const elements = buildElements(getElementById, elementIds);
-    const leaderboardObserver = definition
+    const leaderboardObserver = definition && definition.leaderboard !== false
       ? createLeaderboardSubmissionController(definition, elements)
       : null;
     const wrappedElements = leaderboardObserver ? leaderboardObserver.wrapElements() : elements;
@@ -277,6 +277,7 @@ function createRegistryEntry({
   panelId,
   createGame,
   hidden = false,
+  leaderboard = true,
   order,
   level,
   titleKey,
@@ -288,6 +289,7 @@ function createRegistryEntry({
     buttonId: buttonId,
     panelId: panelId,
     hidden: hidden,
+    leaderboard: leaderboard,
     createGame: createGame,
     menu: {
       order: order,
@@ -340,6 +342,7 @@ export const gameRegistry = [
     buttonId: "btn-cashforge",
     panelId: "game-cashforge",
     hidden: false,
+    leaderboard: false,
     order: 18,
     level: 3,
     titleKey: "menu.cashForge.title",
