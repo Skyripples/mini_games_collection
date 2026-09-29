@@ -339,7 +339,7 @@ export const gameRegistry = [
     id: "cashforge",
     buttonId: "btn-cashforge",
     panelId: "game-cashforge",
-    hidden: true,
+    hidden: false,
     order: 18,
     level: 3,
     titleKey: "menu.cashForge.title",
