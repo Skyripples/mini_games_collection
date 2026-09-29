@@ -2,26 +2,29 @@ import { t } from "../core/i18n.js";
 
 const RECHARGE_AMOUNT = 1000000;
 const MAX_ENHANCE_LEVEL = 13;
-const INITIAL_DOUBLE_HAMMERS = 3;
+const INITIAL_DOUBLE_HAMMERS = 0;
 
 const EQUIPMENT_KEYS = ["weapon", "top", "bottom", "gloves", "shoes"];
 
 const SHOP_PACKS = {
   restore: {
-    cost: 232,
+    cost: 323,
     amount: 5,
+    bonusHammers: 5,
     itemKey: "restoreScrolls",
     nameKey: "cashForge.shop.pack.restore"
   },
   stone: {
-    cost: 960,
-    amount: 100,
+    cost: 225,
+    amount: 20,
+    bonusHammers: 3,
     itemKey: "guardianStones",
     nameKey: "cashForge.shop.pack.stone"
   },
   crystal: {
-    cost: 500,
-    amount: 20,
+    cost: 288,
+    amount: 10,
+    bonusHammers: 10,
     itemKey: "guardianCrystals",
     nameKey: "cashForge.shop.pack.crystal"
   }
@@ -140,6 +143,7 @@ export function createCashForgeGame({
   viewShop,
   viewEnhance,
   coinsGlobal,
+  totalSpentText,
   bagEquipment,
   bagRestoreScrolls,
   bagGuardianStones,
@@ -165,6 +169,7 @@ export function createCashForgeGame({
   equipmentStatusList
 }) {
   let coins = 0;
+  let totalSpent = 0;
   let activeTab = "inventory";
   let equipmentState = createDefaultEquipmentState();
   let items = createDefaultItems();
@@ -198,6 +203,7 @@ export function createCashForgeGame({
     coinsGlobal.textContent = formatted;
     shopCoins.textContent = formatted;
     enhanceCoins.textContent = formatted;
+    totalSpentText.textContent = formatNumber(totalSpent);
   }
 
   function renderInventory() {
@@ -318,11 +324,13 @@ export function createCashForgeGame({
     }
 
     coins -= pack.cost;
+    totalSpent += pack.cost;
     items[pack.itemKey] += pack.amount;
+    items.doubleHammers += pack.bonusHammers;
 
     setMessage("cashForge.message.purchaseSuccess", {
       pack: t(pack.nameKey),
-      amount: pack.amount
+      bonusHammers: pack.bonusHammers
     });
     renderAll();
   }
@@ -516,6 +524,7 @@ export function createCashForgeGame({
 
   function resetGame() {
     coins = 0;
+    totalSpent = 0;
     equipmentState = createDefaultEquipmentState();
     items = createDefaultItems();
     equipmentSelect.value = "weapon";

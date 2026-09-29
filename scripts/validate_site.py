@@ -47,6 +47,7 @@ REQUIRED_IDS = {
     "btn-cashforge-recharge",
     "btn-cashforge-reset",
     "cashforge-coins-global",
+    "cashforge-total-spent",
     "btn-cashforge-tab-inventory",
     "btn-cashforge-tab-shop",
     "btn-cashforge-tab-enhance",

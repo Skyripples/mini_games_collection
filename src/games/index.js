@@ -358,6 +358,7 @@ export const gameRegistry = [
       viewShop: "cashforge-view-shop",
       viewEnhance: "cashforge-view-enhance",
       coinsGlobal: "cashforge-coins-global",
+      totalSpentText: "cashforge-total-spent",
       bagEquipment: "cashforge-bag-equipment",
       bagRestoreScrolls: "cashforge-bag-restore-scrolls",
       bagGuardianStones: "cashforge-bag-guardian-stones",
